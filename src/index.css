@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Rare global overrides only */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-slate-100 text-slate-800 antialiased;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Hide scrollbars on the sticky meal chart while keeping scroll */
+.no-scrollbar::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+.no-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded;
+}
+
+/* Elements marked with this class are hidden during normal UI but revealed
+   for export capture (we toggle a parent class instead). */
+.export-only {
+  display: none;
+}
+
+/* While capturing an export target, hide any interactive-only elements
+   (buttons, action columns) marked with .export-hide so the exported
+   file looks presentable. */
+.exporting .export-hide {
+  display: none !important;
+}
+
+/* Make sure export targets render fully (no scroll clipping) during capture. */
+.exporting {
+  max-height: none !important;
+  overflow: visible !important;
+}
+.exporting .max-h-\[70vh\] {
+  max-height: none !important;
+  overflow: visible !important;
+}
