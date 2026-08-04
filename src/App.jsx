@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import Sidebar from './components/layout/Sidebar'
+import ErrorBoundary from './components/common/ErrorBoundary'
 import DashboardPage from './pages/DashboardPage'
 import MembersPage from './pages/MembersPage'
 import MealChartPage from './pages/MealChartPage'
@@ -10,12 +11,14 @@ export default function App() {
     <div className="flex h-screen overflow-hidden">
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Routes>
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/members" element={<MembersPage />} />
-          <Route path="/meal-chart" element={<MealChartPage />} />
-          <Route path="/finance" element={<FinancePage />} />
-        </Routes>
+        <ErrorBoundary>
+          <Routes>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/members" element={<MembersPage />} />
+            <Route path="/meal-chart" element={<MealChartPage />} />
+            <Route path="/finance" element={<FinancePage />} />
+          </Routes>
+        </ErrorBoundary>
       </div>
     </div>
   )

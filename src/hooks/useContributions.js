@@ -1,5 +1,5 @@
-import { useCallback } from 'react'
-import { db, DEFAULT_INITIAL_BAZAR_TAKA, getMonthSettings } from '../db/db'
+import { useCallback, useEffect } from 'react'
+import { db, DEFAULT_INITIAL_BAZAR_TAKA } from '../db/db'
 import { useLiveQuery } from 'dexie-react-hooks'
 
 /**
@@ -76,14 +76,32 @@ export function useContributions(monthKey) {
  * Read + update the initial bazar taka for a month.
  */
 export function useMonthSettings(monthKey) {
-  const settings = useLiveQuery(() => getMonthSettings(monthKey), [monthKey])
+  // Read-only query — never write inside useLiveQuery (it causes crash loops).
+  // Map undefined (not found) to null so we can tell "loading" from "not found".
+  const settings = useLiveQuery(
+    async () => (await db.monthSettings.get(monthKey)) ?? null,
+    [monthKey],
+  )
+
+  // Create default settings in a separate effect so the live query stays read-only.
+  useEffect(() => {
+    if (settings === undefined) return // still loading
+    if (settings === null) {
+      db.monthSettings.put({
+        month: monthKey,
+        initialBazarTaka: DEFAULT_INITIAL_BAZAR_TAKA,
+      })
+    }
+  }, [settings, monthKey])
 
   const setInitialBazarTaka = useCallback(
     async (value) => {
       const num = Number(value) || 0
+      const existing = await db.monthSettings.get(monthKey)
       await db.monthSettings.put({
         month: monthKey,
         initialBazarTaka: num,
+        finalized: existing?.finalized ?? false,
       })
     },
     [monthKey],

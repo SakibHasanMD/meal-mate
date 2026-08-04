@@ -13,12 +13,14 @@ export function useBazarExpenses(monthKey) {
   const endIso = isoDateForDay(monthKey, daysInMonth(monthKey))
 
   const expenses = useLiveQuery(
-    () =>
-      db.bazarExpenses
+    async () => {
+      const list = await db.bazarExpenses
         .where('date')
         .between(startIso, endIso, true, true)
-        .reverse()
-        .sortBy('date'),
+        .toArray()
+      // Sort by date descending (newest first) in JS to avoid Dexie query quirks.
+      return list.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
+    },
     [monthKey],
     [],
   )
