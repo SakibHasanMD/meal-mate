@@ -57,7 +57,14 @@ export function useMonthlySummary(members, monthKey) {
     const meals = mealEntries || []
     const bazar = bazarExpenses || []
     const contribs = contributions || []
-    const membersList = members || []
+    const allMembers = members || []
+
+    // Filter out members excluded for this month — they don't eat, so they
+    // shouldn't appear in the summary or due calculations.
+    const excluded = thisMonthSettings?.excludedMembers ?? []
+    const membersList = excluded.length
+      ? allMembers.filter((m) => !excluded.includes(m.id))
+      : allMembers
 
     const summary = monthlySummary(membersList, meals, bazar, contribs)
     const due = nextMonthDue(summary, nextMonthSettings?.initialBazarTaka ?? 2000)
@@ -69,6 +76,7 @@ export function useMonthlySummary(members, monthKey) {
       thisMonthSettings,
       nextMonthSettings,
       nextMonth,
+      excludedMembers: excluded,
       summary,
       due,
       totals: {

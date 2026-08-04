@@ -75,6 +75,12 @@ export default function FinancePage() {
 
   const nextInitial = summary.nextMonthSettings?.initialBazarTaka ?? 2000
 
+  // Members included in this month (active and not excluded).
+  const excludedMembers = summary.excludedMembers ?? []
+  const includedMembers = activeMembers.filter(
+    (m) => !excludedMembers.includes(m.id),
+  )
+
   return (
     <>
       <Header
@@ -115,12 +121,12 @@ export default function FinancePage() {
                 </p>
               </div>
               <div className="divide-y divide-slate-100">
-                {activeMembers.length === 0 ? (
+                {includedMembers.length === 0 ? (
                   <div className="p-4 text-center text-sm text-slate-400">
                     No active members.
                   </div>
                 ) : (
-                  activeMembers.map((m) => {
+                  includedMembers.map((m) => {
                     const row = summary.summary.find((r) => r.member.id === m.id)
                     const contribution = row?.contribution ?? 0
                     return (

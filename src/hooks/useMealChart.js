@@ -57,29 +57,38 @@ export function useMealChart(monthKey) {
     [setEntry],
   )
 
-  /** Bulk set a meal type (or both) for every member on a given date. */
+  /**
+   * Bulk set a meal type (or both) for every member across one or more dates.
+   * @param {number[]} memberIds
+   * @param {string[]} dates - ISO date strings (e.g. ['2026-08-01', '2026-08-02'])
+   * @param {string} mealType - 'breakfast' | 'dinner' | 'both'
+   * @param {boolean} value
+   */
   const bulkSet = useCallback(
-    async (memberIds, date, mealType, value) => {
+    async (memberIds, dates, mealType, value) => {
       const val = value ? 1 : 0
+      const dateList = Array.isArray(dates) ? dates : [dates]
       await db.transaction('rw', db.mealEntries, async () => {
-        for (const memberId of memberIds) {
-          const existing = await db.mealEntries
-            .where('[memberId+date]')
-            .equals([memberId, date])
-            .first()
-          if (existing) {
-            const patch = {}
-            if (mealType === 'breakfast' || mealType === 'both') patch.breakfast = val
-            if (mealType === 'dinner' || mealType === 'both') patch.dinner = val
-            await db.mealEntries.update(existing.id, patch)
-          } else {
-            await db.mealEntries.add({
-              memberId,
-              date,
-              breakfast:
-                mealType === 'breakfast' || mealType === 'both' ? val : 0,
-              dinner: mealType === 'dinner' || mealType === 'both' ? val : 0,
-            })
+        for (const date of dateList) {
+          for (const memberId of memberIds) {
+            const existing = await db.mealEntries
+              .where('[memberId+date]')
+              .equals([memberId, date])
+              .first()
+            if (existing) {
+              const patch = {}
+              if (mealType === 'breakfast' || mealType === 'both') patch.breakfast = val
+              if (mealType === 'dinner' || mealType === 'both') patch.dinner = val
+              await db.mealEntries.update(existing.id, patch)
+            } else {
+              await db.mealEntries.add({
+                memberId,
+                date,
+                breakfast:
+                  mealType === 'breakfast' || mealType === 'both' ? val : 0,
+                dinner: mealType === 'dinner' || mealType === 'both' ? val : 0,
+              })
+            }
           }
         }
       })

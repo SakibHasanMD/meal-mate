@@ -102,15 +102,39 @@ export function useMonthSettings(monthKey) {
         month: monthKey,
         initialBazarTaka: num,
         finalized: existing?.finalized ?? false,
+        excludedMembers: existing?.excludedMembers ?? [],
       })
     },
     [monthKey],
   )
 
+  /** Toggle whether a member is excluded from this month (not eating at all). */
+  const toggleMemberExclusion = useCallback(
+    async (memberId) => {
+      const existing = await db.monthSettings.get(monthKey)
+      const excluded = existing?.excludedMembers ?? []
+      const isExcluded = excluded.includes(memberId)
+      const next = isExcluded
+        ? excluded.filter((id) => id !== memberId)
+        : [...excluded, memberId]
+      await db.monthSettings.put({
+        month: monthKey,
+        initialBazarTaka: existing?.initialBazarTaka ?? DEFAULT_INITIAL_BAZAR_TAKA,
+        finalized: existing?.finalized ?? false,
+        excludedMembers: next,
+      })
+    },
+    [monthKey],
+  )
+
+  const excludedMembers = settings?.excludedMembers ?? []
+
   return {
     settings,
     initialBazarTaka: settings?.initialBazarTaka ?? DEFAULT_INITIAL_BAZAR_TAKA,
     setInitialBazarTaka,
+    excludedMembers,
+    toggleMemberExclusion,
   }
 }
 

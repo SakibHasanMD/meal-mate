@@ -126,8 +126,9 @@ const MealChartGrid = forwardRef(function MealChartGrid(
             })}
           </tbody>
           <tfoot>
-            <tr className="sticky bottom-0 z-10">
-              <td className="sticky left-0 z-20 border-t-2 border-slate-300 bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700">
+            {/* Totals row — B and D per member */}
+            <tr className="sticky bottom-0 z-10 border-t-2 border-slate-400 bg-slate-100">
+              <td className="sticky left-0 z-20 border-t-2 border-slate-400 bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700">
                 Totals
               </td>
               {members.map((m) => {
@@ -135,12 +136,12 @@ const MealChartGrid = forwardRef(function MealChartGrid(
                 return (
                   <Fragment key={m.id}>
                     <td
-                      className="border-t-2 border-l border-slate-300 bg-slate-100 px-1 py-2 text-center text-xs font-bold text-slate-700"
+                      className="border-t-2 border-l border-slate-400 bg-slate-100 px-1 py-2 text-center text-xs font-bold text-slate-700"
                     >
                       {t.breakfast}
                     </td>
                     <td
-                      className="border-t-2 border-slate-300 bg-slate-100 px-1 py-2 text-center text-xs font-bold text-slate-700"
+                      className="border-t-2 border-slate-400 bg-slate-100 px-1 py-2 text-center text-xs font-bold text-slate-700"
                     >
                       {t.dinner}
                     </td>
@@ -148,8 +149,9 @@ const MealChartGrid = forwardRef(function MealChartGrid(
                 )
               })}
             </tr>
-            <tr>
-              <td className="sticky left-0 z-20 bg-slate-100 px-3 py-1.5 text-[10px] font-medium text-slate-400">
+            {/* Combined row — B+D per member, separated by a clear line */}
+            <tr className="border-t border-slate-300 bg-slate-50">
+              <td className="sticky left-0 z-20 border-t border-slate-300 bg-slate-50 px-3 py-1.5 text-[10px] font-semibold uppercase text-slate-500">
                 Combined
               </td>
               {members.map((m) => {
@@ -158,7 +160,7 @@ const MealChartGrid = forwardRef(function MealChartGrid(
                   <td
                     key={`${m.id}-tt`}
                     colSpan={2}
-                    className="bg-slate-100 px-1 py-1 text-center text-xs font-bold text-brand-700"
+                    className="border-t border-l border-slate-300 bg-slate-50 px-1 py-1.5 text-center text-sm font-bold text-brand-700"
                   >
                     {t.total}
                   </td>

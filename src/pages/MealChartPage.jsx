@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header, { PageContainer } from '../components/layout/Header'
 import Button from '../components/common/Button'
@@ -14,13 +14,20 @@ import { exportScreenshot } from '../utils/exportHelpers'
 export default function MealChartPage() {
   const { month, activeMembers } = useApp()
   const { entries, toggleMeal, bulkSet } = useMealChart(month)
-  const { settings } = useMonthSettings(month)
+  const { settings, excludedMembers, toggleMemberExclusion } = useMonthSettings(month)
 
   const navigate = useNavigate()
   const gridRef = useRef(null)
   const [exporting, setExporting] = useState(false)
+  const [showMemberPanel, setShowMemberPanel] = useState(false)
 
   const locked = settings?.finalized === true
+
+  // Members who are active AND not excluded for this month.
+  const includedMembers = useMemo(
+    () => activeMembers.filter((m) => !excludedMembers.includes(m.id)),
+    [activeMembers, excludedMembers],
+  )
 
   const handleScreenshot = async () => {
     setExporting(true)
@@ -33,19 +40,23 @@ export default function MealChartPage() {
 
   const finalize = async () => {
     // Soft/UI-level lock: mark the month as finalized.
+    const existing = await db.monthSettings.get(month)
     await db.monthSettings.put({
       month,
-      initialBazarTaka: settings?.initialBazarTaka ?? 2000,
+      initialBazarTaka: existing?.initialBazarTaka ?? 2000,
       finalized: true,
+      excludedMembers: existing?.excludedMembers ?? [],
     })
     navigate('/finance')
   }
 
   const unfinalize = async () => {
+    const existing = await db.monthSettings.get(month)
     await db.monthSettings.put({
       month,
-      initialBazarTaka: settings?.initialBazarTaka ?? 2000,
+      initialBazarTaka: existing?.initialBazarTaka ?? 2000,
       finalized: false,
+      excludedMembers: existing?.excludedMembers ?? [],
     })
   }
 
@@ -60,7 +71,7 @@ export default function MealChartPage() {
               variant="secondary"
               size="sm"
               onClick={handleScreenshot}
-              disabled={exporting || !activeMembers.length}
+              disabled={exporting || !includedMembers.length}
             >
               {exporting ? 'Capturing…' : '📸 Screenshot'}
             </Button>
@@ -78,9 +89,53 @@ export default function MealChartPage() {
       />
       <PageContainer>
         <div className="space-y-4">
+          {/* Member inclusion panel toggle */}
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowMemberPanel((s) => !s)}
+            >
+              {showMemberPanel ? '▾' : '▸'} Members for this month ({includedMembers.length}/{activeMembers.length})
+            </Button>
+            {excludedMembers.length > 0 && (
+              <span className="text-xs text-slate-400">
+                {excludedMembers.length} excluded
+              </span>
+            )}
+          </div>
+
+          {/* Member exclusion panel */}
+          {showMemberPanel && (
+            <div className="rounded-lg border border-slate-200 bg-white p-3">
+              <p className="mb-2 text-xs text-slate-500">
+                Toggle which members are included in this month's meal chart. Excluded members won't appear in the grid or calculations.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {activeMembers.map((m) => {
+                  const isExcluded = excludedMembers.includes(m.id)
+                  return (
+                    <button
+                      key={m.id}
+                      onClick={() => !locked && toggleMemberExclusion(m.id)}
+                      disabled={locked}
+                      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                        isExcluded
+                          ? 'bg-slate-100 text-slate-400 line-through'
+                          : 'bg-brand-50 text-brand-700 hover:bg-brand-100'
+                      } ${locked ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                    >
+                      {m.name}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
           <BulkActionBar
             monthKey={month}
-            members={activeMembers}
+            members={includedMembers}
             onBulkSet={bulkSet}
             locked={locked}
           />
@@ -88,7 +143,7 @@ export default function MealChartPage() {
           <MealChartGrid
             ref={gridRef}
             monthKey={month}
-            members={activeMembers}
+            members={includedMembers}
             entries={entries}
             onToggle={toggleMeal}
             locked={locked}

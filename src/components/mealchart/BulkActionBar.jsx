@@ -3,34 +3,68 @@ import Button from '../common/Button'
 import { daysInMonth, isoDateForDay } from '../../utils/dateHelpers'
 
 /**
- * Toolbar to bulk-set all members' breakfast/dinner/both for a date.
+ * Toolbar to bulk-set all members' breakfast/dinner/both for a range of days.
+ * Supports selecting a single day (from == to) or a multi-day range.
  */
 export default function BulkActionBar({ monthKey, members, onBulkSet, locked }) {
   const days = daysInMonth(monthKey)
-  const [day, setDay] = useState(1)
+  const [fromDay, setFromDay] = useState(1)
+  const [toDay, setToDay] = useState(1)
   const [mealType, setMealType] = useState('both')
 
-  const date = useMemo(() => isoDateForDay(monthKey, Number(day)), [monthKey, day])
+  // Build the list of ISO dates for the selected range.
+  const dates = useMemo(() => {
+    const start = Math.min(Number(fromDay), Number(toDay))
+    const end = Math.max(Number(fromDay), Number(toDay))
+    const list = []
+    for (let d = start; d <= end; d++) {
+      list.push(isoDateForDay(monthKey, d))
+    }
+    return list
+  }, [monthKey, fromDay, toDay])
+
+  const dayCount = dates.length
 
   const run = (value) => {
-    onBulkSet(members.map((m) => m.id), date, mealType, value)
+    onBulkSet(members.map((m) => m.id), dates, mealType, value)
   }
+
+  const dayOptions = Array.from({ length: days }, (_, i) => i + 1)
 
   return (
     <div className="flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 bg-white p-3">
       <div>
-        <label className="mb-1 block text-xs font-medium text-slate-500">Date</label>
+        <label className="mb-1 block text-xs font-medium text-slate-500">From Day</label>
         <select
-          value={day}
-          onChange={(e) => setDay(e.target.value)}
+          value={fromDay}
+          onChange={(e) => setFromDay(e.target.value)}
           className="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         >
-          {Array.from({ length: days }, (_, i) => i + 1).map((d) => (
+          {dayOptions.map((d) => (
             <option key={d} value={d}>
               Day {d}
             </option>
           ))}
         </select>
+      </div>
+
+      <div>
+        <label className="mb-1 block text-xs font-medium text-slate-500">To Day</label>
+        <select
+          value={toDay}
+          onChange={(e) => setToDay(e.target.value)}
+          className="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+        >
+          {dayOptions.map((d) => (
+            <option key={d} value={d}>
+              Day {d}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex items-center pb-1.5 text-xs text-slate-400">
+        {dayCount} day{dayCount > 1 ? 's' : ''}
       </div>
 
       <div>
