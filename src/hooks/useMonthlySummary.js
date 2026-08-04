@@ -55,7 +55,7 @@ export function useMonthlySummary(members, monthKey) {
 
   return useMemo(() => {
     const meals = mealEntries || []
-    const bazar = bazarExpenses || []
+    const rawBazar = bazarExpenses || []
     const contribs = contributions || []
     const allMembers = members || []
 
@@ -66,12 +66,26 @@ export function useMonthlySummary(members, monthKey) {
       ? allMembers.filter((m) => !excluded.includes(m.id))
       : allMembers
 
+    // If bazarEqualsContributions is on, use total contributions as the bazar
+    // total instead of summing individual expense entries.
+    const bazarEqualsContributions =
+      thisMonthSettings?.bazarEqualsContributions ?? false
+    let bazar = rawBazar
+    if (bazarEqualsContributions) {
+      const totalContribs = contribs.reduce(
+        (sum, c) => sum + (Number(c.amount) || 0),
+        0,
+      )
+      bazar = [{ amount: totalContribs }]
+    }
+
     const summary = monthlySummary(membersList, meals, bazar, contribs)
     const due = nextMonthDue(summary, nextMonthSettings?.initialBazarTaka ?? 2000)
 
     return {
       mealEntries: meals,
-      bazarExpenses: bazar,
+      bazarExpenses: rawBazar,
+      bazarEqualsContributions,
       contributions: contribs,
       thisMonthSettings,
       nextMonthSettings,

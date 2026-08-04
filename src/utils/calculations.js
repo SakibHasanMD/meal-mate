@@ -148,7 +148,11 @@ export function monthlySummary(members = [], mealEntries = [], bazarExpenses = [
 export function nextMonthDue(summaryRows = [], nextInitialBazarTaka = 0) {
   return summaryRows.map((row) => {
     const balance = row.balance // negative => due, positive => credit
-    const amountToPay = Number(nextInitialBazarTaka) + balance
+    // Starting contributions + this month's due (or - this month's credit).
+    // Since due is negative and credit is positive, subtract the balance:
+    //   2000 - (-132.71 due) = 2132.71   (pay more)
+    //   2000 - (+800 credit) = 1200      (pay less)
+    const amountToPay = Number(nextInitialBazarTaka) - balance
     return {
       member: row.member,
       balance,

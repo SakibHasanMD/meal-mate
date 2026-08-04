@@ -103,6 +103,7 @@ export function useMonthSettings(monthKey) {
         initialBazarTaka: num,
         finalized: existing?.finalized ?? false,
         excludedMembers: existing?.excludedMembers ?? [],
+        bazarEqualsContributions: existing?.bazarEqualsContributions ?? false,
       })
     },
     [monthKey],
@@ -122,12 +123,30 @@ export function useMonthSettings(monthKey) {
         initialBazarTaka: existing?.initialBazarTaka ?? DEFAULT_INITIAL_BAZAR_TAKA,
         finalized: existing?.finalized ?? false,
         excludedMembers: next,
+        bazarEqualsContributions: existing?.bazarEqualsContributions ?? false,
+      })
+    },
+    [monthKey],
+  )
+
+  /** Toggle whether bazar total = total contributions (skip expense tracking). */
+  const toggleBazarEqualsContributions = useCallback(
+    async () => {
+      const existing = await db.monthSettings.get(monthKey)
+      const current = existing?.bazarEqualsContributions ?? false
+      await db.monthSettings.put({
+        month: monthKey,
+        initialBazarTaka: existing?.initialBazarTaka ?? DEFAULT_INITIAL_BAZAR_TAKA,
+        finalized: existing?.finalized ?? false,
+        excludedMembers: existing?.excludedMembers ?? [],
+        bazarEqualsContributions: !current,
       })
     },
     [monthKey],
   )
 
   const excludedMembers = settings?.excludedMembers ?? []
+  const bazarEqualsContributions = settings?.bazarEqualsContributions ?? false
 
   return {
     settings,
@@ -135,6 +154,8 @@ export function useMonthSettings(monthKey) {
     setInitialBazarTaka,
     excludedMembers,
     toggleMemberExclusion,
+    bazarEqualsContributions,
+    toggleBazarEqualsContributions,
   }
 }
 

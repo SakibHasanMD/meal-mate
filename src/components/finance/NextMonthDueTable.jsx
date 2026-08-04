@@ -1,24 +1,39 @@
 import { forwardRef } from 'react'
+import NumberInput from '../common/NumberInput'
 import { formatMoney } from '../../utils/calculations'
 import { monthLabel } from '../../utils/dateHelpers'
+import { DEFAULT_INITIAL_BAZAR_TAKA } from '../../db/db'
 
 /**
- * Next Month Due Table: one row per member.
- * Columns: Member | This Month's Balance | Next Month Initial Bazar | Amount to Pay.
+ * Bazar Due Table: one row per member.
+ * Columns: Member | {month} Balance | Starting Contributions | Amount to Pay.
+ * The header includes the editable default starting contributions input.
  * Forwards a ref for export capture.
  */
 const NextMonthDueTable = forwardRef(function NextMonthDueTable(
-  { due, nextMonth, initialBazarTaka },
+  { due, month, nextMonth, initialBazarTaka, onCommitInitialBazar },
   ref,
 ) {
   return (
     <div ref={ref} className="export-target rounded-lg border border-slate-200 bg-white">
-      <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-4 py-3">
         <h3 className="text-sm font-semibold text-slate-700">
-          Next Month Due — {monthLabel(nextMonth)}
+          Bazar Due — {monthLabel(nextMonth)}
         </h3>
-        <div className="text-xs text-slate-500">
-          Initial Bazar: <span className="font-semibold text-slate-700">{formatMoney(initialBazarTaka)}</span>
+        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+          <span>
+            Default Starting Contributions:{' '}
+            <span className="font-semibold text-slate-700">
+              ৳ {DEFAULT_INITIAL_BAZAR_TAKA.toLocaleString()}
+            </span>
+          </span>
+          <div className="w-28">
+            <NumberInput
+              value={initialBazarTaka}
+              onCommit={onCommitInitialBazar}
+              placeholder={String(DEFAULT_INITIAL_BAZAR_TAKA)}
+            />
+          </div>
         </div>
       </div>
       <div className="overflow-x-auto">
@@ -26,8 +41,8 @@ const NextMonthDueTable = forwardRef(function NextMonthDueTable(
           <thead>
             <tr className="bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500">
               <th className="px-4 py-2.5">Member</th>
-              <th className="px-4 py-2.5 text-right">This Month Balance</th>
-              <th className="px-4 py-2.5 text-right">Initial Bazar</th>
+              <th className="px-4 py-2.5 text-right">{monthLabel(month)} Balance</th>
+              <th className="px-4 py-2.5 text-right">Starting Contributions</th>
               <th className="px-4 py-2.5 text-right">Amount to Pay</th>
             </tr>
           </thead>
@@ -53,7 +68,7 @@ const NextMonthDueTable = forwardRef(function NextMonthDueTable(
                           : 'text-slate-600'
                     }`}
                   >
-                    {row.balance < 0 ? '-' : '+'}
+                    {row.isDue ? '+' : row.isCredit ? '-' : ''}
                     {formatMoney(Math.abs(row.balance))}
                   </td>
                   <td className="px-4 py-2.5 text-right text-slate-700">

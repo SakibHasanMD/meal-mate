@@ -1,20 +1,23 @@
 import { forwardRef } from 'react'
 import { formatMoney, round2 } from '../../utils/calculations'
+import { monthLabel } from '../../utils/dateHelpers'
 
 /**
- * Monthly Summary Table: one row per member.
+ * Meal Calculation Table: one row per member.
  * Columns: Total Meals | Food Cost | Contribution | Balance (Due/Credit).
  * Balance is red for due, green for credit.
  * Forwards a ref for export capture.
  */
 const MonthlySummaryTable = forwardRef(function MonthlySummaryTable(
-  { summary, mealRate: rate },
+  { summary, mealRate: rate, month },
   ref,
 ) {
   return (
     <div ref={ref} className="export-target rounded-lg border border-slate-200 bg-white">
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-        <h3 className="text-sm font-semibold text-slate-700">Monthly Summary</h3>
+        <h3 className="text-sm font-semibold text-slate-700">
+          Meal Calculation — {monthLabel(month)}
+        </h3>
         <div className="text-xs text-slate-500">
           Meal Rate: <span className="font-semibold text-slate-700">{formatMoney(round2(rate))}</span>
         </div>
@@ -45,9 +48,6 @@ const MonthlySummaryTable = forwardRef(function MonthlySummaryTable(
                   </td>
                   <td className="px-4 py-2.5 text-right text-slate-600">
                     {row.meals.total}
-                    <span className="ml-1 text-[10px] text-slate-400">
-                      (B{row.meals.breakfast}/D{row.meals.dinner})
-                    </span>
                   </td>
                   <td className="px-4 py-2.5 text-right text-slate-700">
                     {formatMoney(row.foodCost)}
@@ -73,6 +73,38 @@ const MonthlySummaryTable = forwardRef(function MonthlySummaryTable(
               ))
             )}
           </tbody>
+          {summary.length > 0 && (
+            <tfoot>
+              <tr className="border-t-2 border-slate-300 bg-slate-50">
+                <td className="px-4 py-2.5 text-xs font-bold uppercase text-slate-600">
+                  Total
+                </td>
+                <td className="px-4 py-2.5 text-right font-bold text-slate-700">
+                  {summary.reduce((s, r) => s + r.meals.total, 0)}
+                </td>
+                <td className="px-4 py-2.5 text-right font-bold text-slate-700">
+                  {formatMoney(summary.reduce((s, r) => s + r.foodCost, 0))}
+                </td>
+                <td className="px-4 py-2.5 text-right font-bold text-slate-700">
+                  {formatMoney(summary.reduce((s, r) => s + r.contribution, 0))}
+                </td>
+                <td
+                  className={`px-4 py-2.5 text-right font-bold ${
+                    Math.abs(summary.reduce((s, r) => s + r.balance, 0)) < 0.01
+                      ? 'text-slate-500'
+                      : 'text-amber-600'
+                  }`}
+                >
+                  {formatMoney(Math.abs(summary.reduce((s, r) => s + r.balance, 0)))}
+                  <span className="ml-1 text-[10px]">
+                    {Math.abs(summary.reduce((s, r) => s + r.balance, 0)) < 0.01
+                      ? 'balanced'
+                      : 'check'}
+                  </span>
+                </td>
+              </tr>
+            </tfoot>
+          )}
         </table>
       </div>
     </div>
