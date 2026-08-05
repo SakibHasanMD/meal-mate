@@ -1,7 +1,7 @@
 import Dexie from 'dexie'
 
 /**
- * Local IndexedDB database for the Mess Meal & Bazar Manager.
+ * Local IndexedDB database for the MealMate app.
  * Single-user, browser-only persistence via Dexie.
  *
  * Tables:

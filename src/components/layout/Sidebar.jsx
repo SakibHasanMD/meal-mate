@@ -11,8 +11,8 @@ export default function Sidebar() {
   return (
     <aside className="flex w-56 flex-shrink-0 flex-col border-r border-slate-200 bg-white">
       <div className="px-4 py-5">
-        <div className="text-lg font-bold text-brand-700">Mess Manager</div>
-        <div className="text-xs text-slate-400">Meal & Bazar</div>
+        <div className="text-lg font-bold text-brand-700">MealMate</div>
+        <div className="text-xs text-slate-400">Meal & Bazar Share</div>
       </div>
       <nav className="flex-1 space-y-1 px-2">
         {navItems.map((item) => (

@@ -1,5 +1,5 @@
 /**
- * Pure calculation functions for the Mess Meal & Bazar Manager.
+ * Pure calculation functions for the MealMate app.
  *
  * Inputs are plain arrays/objects (meal entries, bazar expenses,
  * contributions, month settings). Outputs are computed numbers.
