@@ -19,6 +19,27 @@ export function AppProvider({ children }) {
     localStorage.setItem('selectedMonth', month)
   }, [month])
 
+  // Dark mode: saved choice wins; otherwise follow the system preference.
+  // The class is applied immediately (not just in the effect) so the very
+  // first paint already has the right theme — no light-mode flash on load.
+  const [dark, setDark] = useState(() => {
+    const saved = localStorage.getItem('theme')
+    let isDark
+    if (saved === 'dark') isDark = true
+    else if (saved === 'light') isDark = false
+    else isDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false
+    document.documentElement.classList.toggle('dark', isDark)
+    return isDark
+  })
+
+  // Apply + persist the theme.
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', dark)
+    localStorage.setItem('theme', dark ? 'dark' : 'light')
+  }, [dark])
+
+  const toggleDark = useCallback(() => setDark((d) => !d), [])
+
   // Live query of all members (sorted by name).
   const members = useLiveQuery(() => db.members.orderBy('name').toArray(), [], [])
 
@@ -31,6 +52,8 @@ export function AppProvider({ children }) {
     setMonth: setMonthSafe,
     members: members || [],
     activeMembers,
+    dark,
+    toggleDark,
   }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

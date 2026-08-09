@@ -5,6 +5,8 @@ import DashboardPage from './pages/DashboardPage'
 import MembersPage from './pages/MembersPage'
 import MealChartPage from './pages/MealChartPage'
 import FinancePage from './pages/FinancePage'
+import HouseFundPage from './pages/HouseFundPage'
+import UtilitiesPage from './pages/UtilitiesPage'
 
 export default function App() {
   return (
@@ -17,6 +19,8 @@ export default function App() {
             <Route path="/members" element={<MembersPage />} />
             <Route path="/meal-chart" element={<MealChartPage />} />
             <Route path="/finance" element={<FinancePage />} />
+            <Route path="/house-fund" element={<HouseFundPage />} />
+            <Route path="/utilities" element={<UtilitiesPage />} />
           </Routes>
         </ErrorBoundary>
       </div>

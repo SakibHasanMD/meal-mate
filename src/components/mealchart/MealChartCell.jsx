@@ -15,7 +15,7 @@ function MealChartCellBase({ value, onToggle, disabled }) {
       className={`flex h-8 w-8 items-center justify-center rounded text-xs font-semibold transition-colors ${
         on
           ? 'bg-brand-600 text-white hover:bg-brand-700'
-          : 'bg-slate-100 text-slate-300 hover:bg-slate-200'
+          : 'bg-slate-100 text-slate-300 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-500 dark:hover:bg-slate-600'
       } ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
       aria-label={on ? 'On (click to turn off)' : 'Off (click to turn on)'}
     >

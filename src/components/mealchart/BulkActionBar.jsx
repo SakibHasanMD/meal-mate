@@ -32,13 +32,13 @@ export default function BulkActionBar({ monthKey, members, onBulkSet, locked }) 
   const dayOptions = Array.from({ length: days }, (_, i) => i + 1)
 
   return (
-    <div className="flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 bg-white p-3">
+    <div className="flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
       <div>
-        <label className="mb-1 block text-xs font-medium text-slate-500">From Day</label>
+        <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">From Day</label>
         <select
           value={fromDay}
           onChange={(e) => setFromDay(e.target.value)}
-          className="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          className="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-800 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
         >
           {dayOptions.map((d) => (
             <option key={d} value={d}>
@@ -49,11 +49,11 @@ export default function BulkActionBar({ monthKey, members, onBulkSet, locked }) 
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-slate-500">To Day</label>
+        <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">To Day</label>
         <select
           value={toDay}
           onChange={(e) => setToDay(e.target.value)}
-          className="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          className="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-800 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
         >
           {dayOptions.map((d) => (
             <option key={d} value={d}>
@@ -63,16 +63,16 @@ export default function BulkActionBar({ monthKey, members, onBulkSet, locked }) 
         </select>
       </div>
 
-      <div className="flex items-center pb-1.5 text-xs text-slate-400">
+      <div className="flex items-center pb-1.5 text-xs text-slate-400 dark:text-slate-500">
         {dayCount} day{dayCount > 1 ? 's' : ''}
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-slate-500">Meal</label>
+        <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Meal</label>
         <select
           value={mealType}
           onChange={(e) => setMealType(e.target.value)}
-          className="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          className="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-800 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
         >
           <option value="both">Both</option>
           <option value="breakfast">Breakfast</option>
@@ -90,7 +90,7 @@ export default function BulkActionBar({ monthKey, members, onBulkSet, locked }) 
       </div>
 
       {locked && (
-        <span className="text-xs text-amber-600">Month finalized — unlock to edit.</span>
+        <span className="text-xs text-amber-600 dark:text-amber-400">Month finalized — unlock to edit.</span>
       )}
     </div>
   )

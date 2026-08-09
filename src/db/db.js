@@ -10,12 +10,15 @@ import Dexie from 'dexie'
  *  - bazarExpenses:  grocery spending log
  *  - contributions:  money each member deposits for a given month
  *  - monthSettings:  per-month config (e.g. initial bazar taka)
+ *  - houseFunds:     permanent house-fund ledger (deposits + spending, all-time)
+ *  - utilities:      monthly utility bills (electricity, water, gas, ...)
  *
  * All derived numbers (meal rate, dues, etc.) are computed on the fly
  * from these source tables — never stored.
  */
 export const db = new Dexie('MealManagerDB')
 
+// v1 — original schema.
 db.version(1).stores({
   // Primary key auto-increments as `id`.
   members: '++id, name, active, joinDate',
@@ -25,6 +28,20 @@ db.version(1).stores({
   contributions: '++id, memberId, month, [memberId+month]',
   // `month` (YYYY-MM) is the primary key here.
   monthSettings: 'month, initialBazarTaka',
+})
+
+// v2 — adds house fund + utilities. Upgrading in place NEVER deletes data;
+// existing tables must be re-declared unchanged so Dexie keeps them.
+db.version(2).stores({
+  members: '++id, name, active, joinDate',
+  mealEntries: '++id, memberId, date, [memberId+date]',
+  bazarExpenses: '++id, date, month',
+  contributions: '++id, memberId, month, [memberId+month]',
+  monthSettings: 'month, initialBazarTaka',
+  // All-time house fund ledger, one row per transaction.
+  houseFunds: '++id, date, type',
+  // Monthly utility bills; `month` (YYYY-MM) mirrors the entry date.
+  utilities: '++id, date, month, billType',
 })
 
 /** Default starting grocery fund for a new month. */

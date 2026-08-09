@@ -22,9 +22,9 @@ export default class ErrorBoundary extends Component {
     if (this.state.hasError) {
       return (
         <div className="flex h-full items-center justify-center p-8">
-          <div className="max-w-md rounded-lg border border-red-200 bg-red-50 p-6">
-            <h2 className="text-lg font-bold text-red-700">Something went wrong</h2>
-            <p className="mt-2 text-sm text-red-600">
+          <div className="max-w-md rounded-lg border border-red-200 bg-red-50 p-6 dark:border-red-900 dark:bg-red-950/60">
+            <h2 className="text-lg font-bold text-red-700 dark:text-red-300">Something went wrong</h2>
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">
               {this.state.error?.message || 'An unexpected error occurred.'}
             </p>
             <button

@@ -14,7 +14,7 @@ export default function MonthSelector({ className = '' }) {
     <div className={`flex items-center gap-2 ${className}`}>
       <button
         onClick={() => go(-1)}
-        className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm hover:bg-slate-50"
+        className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
         aria-label="Previous month"
       >
         ‹
@@ -23,7 +23,7 @@ export default function MonthSelector({ className = '' }) {
       <select
         value={month}
         onChange={(e) => setMonth(e.target.value)}
-        className="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm font-medium focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+        className="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm font-medium text-slate-800 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
       >
         {/* Show 12 months back + 3 months forward */}
         {Array.from({ length: 16 }, (_, i) => shiftMonth(currentMonthKey(), -12 + i)).map(
@@ -37,7 +37,7 @@ export default function MonthSelector({ className = '' }) {
 
       <button
         onClick={() => go(1)}
-        className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm hover:bg-slate-50"
+        className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
         aria-label="Next month"
       >
         ›
@@ -46,7 +46,7 @@ export default function MonthSelector({ className = '' }) {
       {month !== currentMonthKey() && (
         <button
           onClick={() => setMonth(currentMonthKey())}
-          className="ml-1 rounded-md px-2 py-1.5 text-xs text-brand-700 hover:bg-brand-50"
+          className="ml-1 rounded-md px-2 py-1.5 text-xs text-brand-700 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-900/40"
         >
           Today
         </button>

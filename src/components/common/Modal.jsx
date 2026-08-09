@@ -22,14 +22,14 @@ export default function Modal({ open, onClose, title, children, footer }) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg rounded-xl bg-white shadow-xl"
+        className="w-full max-w-lg rounded-xl bg-white shadow-xl dark:bg-slate-800 dark:shadow-black/40"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">
-          <h3 className="text-base font-semibold text-slate-800">{title}</h3>
+        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3 dark:border-slate-700">
+          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">{title}</h3>
           <button
             onClick={onClose}
-            className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300"
             aria-label="Close"
           >
             ✕
@@ -37,7 +37,7 @@ export default function Modal({ open, onClose, title, children, footer }) {
         </div>
         <div className="max-h-[70vh] overflow-y-auto px-5 py-4">{children}</div>
         {footer && (
-          <div className="flex justify-end gap-2 border-t border-slate-200 px-5 py-3">
+          <div className="flex justify-end gap-2 border-t border-slate-200 px-5 py-3 dark:border-slate-700">
             {footer}
           </div>
         )}

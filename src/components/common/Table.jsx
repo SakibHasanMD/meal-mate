@@ -16,7 +16,7 @@ export default function Table({ children, className = '' }) {
 export function Th({ children, className = '' }) {
   return (
     <th
-      className={`border-b border-slate-200 bg-slate-50 px-3 py-2 text-left font-semibold text-slate-600 ${className}`}
+      className={`border-b border-slate-200 bg-slate-50 px-3 py-2 text-left font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-700/60 dark:text-slate-300 ${className}`}
     >
       {children}
     </th>
@@ -26,7 +26,7 @@ export function Th({ children, className = '' }) {
 /** Standard table data cell. */
 export function Td({ children, className = '' }) {
   return (
-    <td className={`border-b border-slate-100 px-3 py-2 text-slate-700 ${className}`}>
+    <td className={`border-b border-slate-100 px-3 py-2 text-slate-700 dark:border-slate-700/60 dark:text-slate-300 ${className}`}>
       {children}
     </td>
   )
@@ -35,6 +35,6 @@ export function Td({ children, className = '' }) {
 /** Standard table row. */
 export function Tr({ children, className = '' }) {
   return (
-    <tr className={`hover:bg-slate-50 ${className}`}>{children}</tr>
+    <tr className={`hover:bg-slate-50 dark:hover:bg-slate-700/30 ${className}`}>{children}</tr>
   )
 }

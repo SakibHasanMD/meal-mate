@@ -11,6 +11,11 @@ async function captureElement(el) {
   if (!el) throw new Error('No element to capture')
 
   el.classList.add('exporting')
+  // Exports always capture the light theme so PDFs/PNGs stay readable even
+  // when the app is in dark mode.
+  const root = document.documentElement
+  const wasDark = root.classList.contains('dark')
+  if (wasDark) root.classList.remove('dark')
   try {
     const canvas = await html2canvas(el, {
       scale: 2,
@@ -21,6 +26,7 @@ async function captureElement(el) {
     })
     return canvas
   } finally {
+    if (wasDark) root.classList.add('dark')
     el.classList.remove('exporting')
   }
 }

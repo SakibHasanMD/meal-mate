@@ -89,7 +89,7 @@ export default function MemberForm({ open, onClose, onSave, initial }) {
               onChange={(e) => set('active', e.target.checked)}
               className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
             />
-            <span className="text-slate-600">
+            <span className="text-slate-600 dark:text-slate-300">
               {form.active ? 'Currently staying' : 'Left / inactive'}
             </span>
           </label>
@@ -110,6 +110,8 @@ export default function MemberForm({ open, onClose, onSave, initial }) {
           width: 100%;
           border-radius: 0.375rem;
           border: 1px solid #cbd5e1;
+          background: #fff;
+          color: #1e293b;
           padding: 0.375rem 0.625rem;
           font-size: 0.875rem;
         }
@@ -117,6 +119,14 @@ export default function MemberForm({ open, onClose, onSave, initial }) {
           outline: none;
           border-color: #22c55e;
           box-shadow: 0 0 0 1px #22c55e;
+        }
+        .dark .input {
+          background: #1e293b;
+          color: #e2e8f0;
+          border-color: #475569;
+        }
+        .dark .input::placeholder {
+          color: #64748b;
         }
       `}</style>
     </Modal>
@@ -126,7 +136,7 @@ export default function MemberForm({ open, onClose, onSave, initial }) {
 function Field({ label, required, children }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-medium text-slate-600">
+      <span className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
         {label} {required && <span className="text-red-500">*</span>}
       </span>
       {children}

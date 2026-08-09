@@ -14,6 +14,16 @@ body {
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
+/* Dark mode base surface. */
+.dark body {
+  @apply bg-slate-900 text-slate-100;
+}
+
+/* Color-scheme so native controls (date pickers, selects) render dark. */
+.dark {
+  color-scheme: dark;
+}
+
 /* Hide scrollbars on the sticky meal chart while keeping scroll */
 .no-scrollbar::-webkit-scrollbar {
   height: 8px;

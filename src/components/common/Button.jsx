@@ -15,9 +15,10 @@ export default function Button({
     primary:
       'bg-brand-600 text-white hover:bg-brand-700 focus:ring-brand-500',
     secondary:
-      'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus:ring-slate-400',
+      'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus:ring-slate-400 dark:bg-slate-700 dark:text-slate-200 dark:border-slate-600 dark:hover:bg-slate-600',
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
-    ghost: 'text-slate-600 hover:bg-slate-100 focus:ring-slate-400',
+    ghost:
+      'text-slate-600 hover:bg-slate-100 focus:ring-slate-400 dark:text-slate-300 dark:hover:bg-slate-700/60',
     success: 'bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500',
   }
 

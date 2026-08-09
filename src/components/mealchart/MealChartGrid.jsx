@@ -38,7 +38,7 @@ const MealChartGrid = forwardRef(function MealChartGrid(
 
   if (!members.length) {
     return (
-      <div className="rounded-lg border border-dashed border-slate-300 bg-white p-10 text-center text-slate-400">
+      <div className="rounded-lg border border-dashed border-slate-300 bg-white p-10 text-center text-slate-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-500">
         No active members. Add members on the Members page first.
       </div>
     )
@@ -47,14 +47,14 @@ const MealChartGrid = forwardRef(function MealChartGrid(
   return (
     <div
       ref={ref}
-      className="export-target inline-block min-w-full rounded-lg border border-slate-200 bg-white p-3"
+      className="export-target inline-block min-w-full rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-800"
     >
       <div className="max-h-[70vh] overflow-auto no-scrollbar">
         <table className="border-collapse text-sm">
           <thead>
             <tr>
               <th
-                className="sticky left-0 z-20 border-b border-slate-200 bg-slate-50 px-3 py-2 text-left font-semibold text-slate-600"
+                className="sticky left-0 z-20 border-b border-slate-200 bg-slate-50 px-3 py-2 text-left font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-300"
               >
                 Date
               </th>
@@ -62,25 +62,25 @@ const MealChartGrid = forwardRef(function MealChartGrid(
                 <th
                   key={m.id}
                   colSpan={2}
-                  className="border-b border-l border-slate-200 bg-slate-50 px-2 py-2 text-center text-xs font-semibold text-slate-700"
+                  className="border-b border-l border-slate-200 bg-slate-50 px-2 py-2 text-center text-xs font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-200"
                 >
                   {m.name}
                 </th>
               ))}
             </tr>
             <tr>
-              <th className="sticky left-0 z-20 border-b border-slate-200 bg-slate-50 px-3 py-1.5 text-left text-xs font-normal text-slate-400">
+              <th className="sticky left-0 z-20 border-b border-slate-200 bg-slate-50 px-3 py-1.5 text-left text-xs font-normal text-slate-400 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-400">
                 Day
               </th>
               {members.map((m) => (
                 <Fragment key={m.id}>
                   <th
-                    className="border-b border-l border-slate-200 bg-slate-50 px-1.5 py-1.5 text-center text-[10px] font-medium text-slate-400"
+                    className="border-b border-l border-slate-200 bg-slate-50 px-1.5 py-1.5 text-center text-[10px] font-medium text-slate-400 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-400"
                   >
                     B
                   </th>
                   <th
-                    className="border-b border-slate-200 bg-slate-50 px-1.5 py-1.5 text-center text-[10px] font-medium text-slate-400"
+                    className="border-b border-slate-200 bg-slate-50 px-1.5 py-1.5 text-center text-[10px] font-medium text-slate-400 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-400"
                   >
                     D
                   </th>
@@ -92,8 +92,8 @@ const MealChartGrid = forwardRef(function MealChartGrid(
             {Array.from({ length: days }, (_, i) => i + 1).map((day) => {
               const date = isoDateForDay(monthKey, day)
               return (
-                <tr key={day} className="hover:bg-slate-50/50">
-                  <td className="sticky left-0 z-10 border-b border-slate-100 bg-white px-3 py-1.5 text-xs font-medium text-slate-600">
+                <tr key={day} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/30">
+                  <td className="sticky left-0 z-10 border-b border-slate-100 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 dark:border-slate-700/60 dark:bg-slate-800 dark:text-slate-300">
                     {day}
                   </td>
                   {members.map((m) => {
@@ -101,7 +101,7 @@ const MealChartGrid = forwardRef(function MealChartGrid(
                     return (
                       <Fragment key={m.id}>
                         <td
-                          className="border-b border-l border-slate-100 px-1 py-1 text-center"
+                          className="border-b border-l border-slate-100 px-1 py-1 text-center dark:border-slate-700/60"
                         >
                           <MealChartCell
                             value={entry?.breakfast ?? 0}
@@ -110,7 +110,7 @@ const MealChartGrid = forwardRef(function MealChartGrid(
                           />
                         </td>
                         <td
-                          className="border-b border-slate-100 px-1 py-1 text-center"
+                          className="border-b border-slate-100 px-1 py-1 text-center dark:border-slate-700/60"
                         >
                           <MealChartCell
                             value={entry?.dinner ?? 0}
@@ -127,8 +127,8 @@ const MealChartGrid = forwardRef(function MealChartGrid(
           </tbody>
           <tfoot>
             {/* Totals row — B and D per member */}
-            <tr className="sticky bottom-0 z-10 border-t-2 border-slate-400 bg-slate-100">
-              <td className="sticky left-0 z-20 border-t-2 border-slate-400 bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700">
+            <tr className="sticky bottom-0 z-10 border-t-2 border-slate-400 bg-slate-100 dark:border-slate-500 dark:bg-slate-700">
+              <td className="sticky left-0 z-20 border-t-2 border-slate-400 bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700 dark:border-slate-500 dark:bg-slate-700 dark:text-slate-200">
                 Totals
               </td>
               {members.map((m) => {
@@ -136,12 +136,12 @@ const MealChartGrid = forwardRef(function MealChartGrid(
                 return (
                   <Fragment key={m.id}>
                     <td
-                      className="border-t-2 border-l border-slate-400 bg-slate-100 px-1 py-2 text-center text-xs font-bold text-slate-700"
+                      className="border-t-2 border-l border-slate-400 bg-slate-100 px-1 py-2 text-center text-xs font-bold text-slate-700 dark:border-slate-500 dark:bg-slate-700 dark:text-slate-200"
                     >
                       {t.breakfast}
                     </td>
                     <td
-                      className="border-t-2 border-slate-400 bg-slate-100 px-1 py-2 text-center text-xs font-bold text-slate-700"
+                      className="border-t-2 border-slate-400 bg-slate-100 px-1 py-2 text-center text-xs font-bold text-slate-700 dark:border-slate-500 dark:bg-slate-700 dark:text-slate-200"
                     >
                       {t.dinner}
                     </td>
@@ -150,8 +150,8 @@ const MealChartGrid = forwardRef(function MealChartGrid(
               })}
             </tr>
             {/* Combined row — B+D per member, separated by a clear line */}
-            <tr className="border-t border-slate-300 bg-slate-50">
-              <td className="sticky left-0 z-20 border-t border-slate-300 bg-slate-50 px-3 py-1.5 text-[10px] font-semibold uppercase text-slate-500">
+            <tr className="border-t border-slate-300 bg-slate-50 dark:border-slate-600 dark:bg-slate-800">
+              <td className="sticky left-0 z-20 border-t border-slate-300 bg-slate-50 px-3 py-1.5 text-[10px] font-semibold uppercase text-slate-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400">
                 Combined
               </td>
               {members.map((m) => {
@@ -160,7 +160,7 @@ const MealChartGrid = forwardRef(function MealChartGrid(
                   <td
                     key={`${m.id}-tt`}
                     colSpan={2}
-                    className="border-t border-l border-slate-300 bg-slate-50 px-1 py-1.5 text-center text-sm font-bold text-brand-700"
+                    className="border-t border-l border-slate-300 bg-slate-50 px-1 py-1.5 text-center text-sm font-bold text-brand-700 dark:border-slate-600 dark:bg-slate-800 dark:text-brand-300"
                   >
                     {t.total}
                   </td>

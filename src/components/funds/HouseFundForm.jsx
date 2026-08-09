@@ -3,14 +3,16 @@ import Modal from '../common/Modal'
 
 const emptyForm = {
   date: new Date().toISOString().slice(0, 10),
+  type: 'deposit',
   amount: '',
   note: '',
 }
 
 /**
- * Modal form for adding/editing a bazar expense entry.
+ * Modal form for adding/editing a house fund entry.
+ * Type: deposit (money in) or spending (money out).
  */
-export default function BazarExpenseForm({ open, onClose, onSave, initial }) {
+export default function HouseFundForm({ open, onClose, onSave, initial }) {
   const [form, setForm] = useState(emptyForm)
   const [loading, setLoading] = useState(false)
 
@@ -20,6 +22,7 @@ export default function BazarExpenseForm({ open, onClose, onSave, initial }) {
         initial
           ? {
               date: initial.date || emptyForm.date,
+              type: initial.type === 'expense' ? 'expense' : 'deposit',
               amount: initial.amount != null ? String(initial.amount) : '',
               note: initial.note || '',
             }
@@ -37,6 +40,7 @@ export default function BazarExpenseForm({ open, onClose, onSave, initial }) {
     try {
       await onSave({
         date: form.date,
+        type: form.type,
         amount: Number(form.amount) || 0,
         note: form.note,
       })
@@ -50,7 +54,7 @@ export default function BazarExpenseForm({ open, onClose, onSave, initial }) {
     <Modal
       open={open}
       onClose={onClose}
-      title={initial ? 'Edit Expense' : 'Add Expense'}
+      title={initial ? 'Edit House Fund Entry' : 'Add House Fund Entry'}
       footer={
         <Modal.Footer
           onCancel={onClose}
@@ -62,7 +66,39 @@ export default function BazarExpenseForm({ open, onClose, onSave, initial }) {
     >
       <form onSubmit={submit} className="space-y-4">
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Date</span>
+          <span className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
+            Type
+          </span>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => set('type', 'deposit')}
+              className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                form.type === 'deposit'
+                  ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+                  : 'border-slate-300 text-slate-500 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-700'
+              }`}
+            >
+              + Deposit
+            </button>
+            <button
+              type="button"
+              onClick={() => set('type', 'expense')}
+              className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                form.type === 'expense'
+                  ? 'border-red-500 bg-red-50 text-red-600 dark:bg-red-900/40 dark:text-red-300'
+                  : 'border-slate-300 text-slate-500 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-700'
+              }`}
+            >
+              − Spending
+            </button>
+          </div>
+        </label>
+
+        <label className="block">
+          <span className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
+            Date
+          </span>
           <input
             type="date"
             value={form.date}
@@ -90,12 +126,14 @@ export default function BazarExpenseForm({ open, onClose, onSave, initial }) {
         </label>
 
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">Note</span>
+          <span className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
+            Note
+          </span>
           <input
             type="text"
             value={form.note}
             onChange={(e) => set('note', e.target.value)}
-            placeholder="e.g. rice + vegetables"
+            placeholder="e.g. rent, wifi, cleaning supplies"
             className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-800 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           />
         </label>
