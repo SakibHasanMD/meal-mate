@@ -46,6 +46,7 @@ export default function MealChartPage() {
       initialBazarTaka: existing?.initialBazarTaka ?? 2000,
       finalized: true,
       excludedMembers: existing?.excludedMembers ?? [],
+      bazarEqualsContributions: existing?.bazarEqualsContributions ?? false,
     })
     navigate('/finance')
   }
@@ -57,6 +58,7 @@ export default function MealChartPage() {
       initialBazarTaka: existing?.initialBazarTaka ?? 2000,
       finalized: false,
       excludedMembers: existing?.excludedMembers ?? [],
+      bazarEqualsContributions: existing?.bazarEqualsContributions ?? false,
     })
   }
 

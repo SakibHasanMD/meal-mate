@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { db } from '../db/db'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { daysInMonth, isoDateForDay } from '../utils/dateHelpers'
@@ -8,7 +8,7 @@ import { daysInMonth, isoDateForDay } from '../utils/dateHelpers'
  */
 export const UTILITY_TYPES = {
   electricity: { label: 'Electricity', icon: '💡' },
-  water: { label: 'Water', icon: '💧' },
+  trash: { label: 'Trash', icon: '🗑️' },
   gas: { label: 'Gas', icon: '🔥' },
   internet: { label: 'Internet', icon: '🌐' },
   other: { label: 'Other', icon: '📄' },
@@ -30,6 +30,12 @@ export const UTILITY_TYPE_KEYS = Object.keys(UTILITY_TYPES)
 export function useUtilities(monthKey) {
   const startIso = `${monthKey}-01`
   const endIso = isoDateForDay(monthKey, daysInMonth(monthKey))
+
+  // One-time migration: "water" bills were renamed to "trash". Idempotent —
+  // converts any leftover water rows so they keep displaying as Trash.
+  useEffect(() => {
+    db.utilities.where('billType').equals('water').modify({ billType: 'trash' })
+  }, [])
 
   const entries = useLiveQuery(
     async () => {

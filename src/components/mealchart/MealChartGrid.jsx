@@ -80,7 +80,7 @@ const MealChartGrid = forwardRef(function MealChartGrid(
                     key={day}
                     className={`border-b border-l border-slate-200 px-1 py-1.5 text-center text-sm font-semibold dark:border-slate-700 ${
                       today
-                        ? 'bg-[rgb(244,111,111)] text-white ring-1 ring-inset ring-[rgb(255,0,0)]'
+                        ? 'bg-[rgb(22,163,74)] text-white ring-1 ring-inset ring-[rgb(22,163,74)]'
                         : weekend
                           ? 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400'
                           : 'bg-slate-50 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
@@ -115,7 +115,7 @@ const MealChartGrid = forwardRef(function MealChartGrid(
                         key={day}
                         className={`border-b border-l border-slate-100 px-0.5 py-1 text-center dark:border-slate-700/60 ${
                           today
-                            ? 'bg-[rgba(246,131,131,0.7)]'
+                            ? 'bg-[rgba(22,163,74,0.15)]'
                             : weekend
                               ? 'bg-amber-50/40 dark:bg-amber-900/10'
                               : ''

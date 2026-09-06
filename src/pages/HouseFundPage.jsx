@@ -52,7 +52,7 @@ export default function HouseFundPage() {
           <StatCard
             label="Total Deposits"
             value={formatMoney(fund.totalDeposits)}
-            tone="emerald"
+            tone="amber"
           />
           <StatCard
             label="Total Spending"
@@ -83,6 +83,8 @@ const tones = {
   emerald:
     'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-900/30 dark:text-emerald-300',
   red: 'border-red-200 bg-red-50 text-red-600 dark:border-red-900 dark:bg-red-900/30 dark:text-red-300',
+  amber:
+    'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-900/30 dark:text-amber-300',
 }
 
 function StatCard({ label, value, tone = 'emerald' }) {
