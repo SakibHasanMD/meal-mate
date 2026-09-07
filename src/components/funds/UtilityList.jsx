@@ -1,16 +1,19 @@
 import Button from '../common/Button'
 import { prettyDate } from '../../utils/dateHelpers'
 import { formatMoney } from '../../utils/calculations'
-import { UTILITY_TYPES } from '../../hooks/useUtilities'
+import { utilityTypeIcon, utilityTypeLabel } from '../../utils/utilityTypes'
 
 /**
  * Monthly utility bills list. Additions only — every row is money the
  * house paid for a utility (electricity, water, gas, internet, ...).
+ *
+ * @param {Map} byName - name -> utility type lookup (for icon + label)
  */
 export default function UtilityList({
   entries,
   monthTotal,
   memberCount,
+  byName,
   onAdd,
   onEdit,
   onDelete,
@@ -57,7 +60,8 @@ export default function UtilityList({
             </thead>
             <tbody>
               {entries.map((e) => {
-                const type = UTILITY_TYPES[e.billType] || UTILITY_TYPES.other
+                const icon = utilityTypeIcon(byName, e.billType)
+                const label = utilityTypeLabel(byName, e.billType)
                 return (
                   <tr
                     key={e.id}
@@ -68,8 +72,8 @@ export default function UtilityList({
                     </td>
                     <td className="px-4 py-2">
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">
-                        <span>{type.icon}</span>
-                        {type.label}
+                        <span>{icon}</span>
+                        {label}
                       </span>
                     </td>
                     <td className="px-4 py-2 text-right font-medium text-slate-800 dark:text-slate-100">

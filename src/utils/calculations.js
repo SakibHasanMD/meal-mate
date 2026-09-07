@@ -171,6 +171,6 @@ export function dashboardTotals(members = [], mealEntries = [], bazarExpenses = 
     totalMeals: totalMeals(mealEntries),
     totalBazar: totalBazar(bazarExpenses),
     mealRate: mealRate(bazarExpenses, mealEntries),
-    activeMembers: members.filter((m) => m.active).length,
+    activeMembers: members.filter((m) => m.status === 'active').length,
   }
 }

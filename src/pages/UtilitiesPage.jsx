@@ -3,24 +3,29 @@ import Header, { PageContainer } from '../components/layout/Header'
 import Button from '../components/common/Button'
 import UtilityList from '../components/funds/UtilityList'
 import UtilityForm from '../components/funds/UtilityForm'
+import UtilityTypeManager from '../components/funds/UtilityTypeManager'
 import { useApp } from '../context/AppContext'
-import { useUtilities, UTILITY_TYPES } from '../hooks/useUtilities'
+import { useUtilities } from '../hooks/useUtilities'
+import { useUtilityTypes } from '../hooks/useUtilityTypes'
 import { monthLabel } from '../utils/dateHelpers'
 import { formatMoney } from '../utils/calculations'
 
 /**
- * Monthly Utilities page — utility bills for the selected month
- * (electricity, water, gas, internet, ...). Additions only.
+ * Monthly Utilities page — utility bills for the selected month.
+ * Bill types come from the `utilityTypes` table: six fixed defaults plus any
+ * custom types the user creates in "Manage Types" (each with its own icon).
  */
 export default function UtilitiesPage() {
   const { month, activeMembers } = useApp()
   const utils = useUtilities(month)
+  const { types, byName } = useUtilityTypes()
 
   // Utility costs are split equally among all active members.
   const memberCount = activeMembers.length
   const perMemberTotal = memberCount > 0 ? utils.monthTotal / memberCount : 0
 
   const [form, setForm] = useState({ open: false, editing: null })
+  const [managerOpen, setManagerOpen] = useState(false)
 
   const openAdd = () => setForm({ open: true, editing: null })
   const openEdit = (e) => setForm({ open: true, editing: e })
@@ -43,9 +48,14 @@ export default function UtilitiesPage() {
         title="Utilities"
         subtitle={monthLabel(month)}
         actions={
-          <Button variant="primary" size="sm" onClick={openAdd}>
-            + Add Bill
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="secondary" size="sm" onClick={() => setManagerOpen(true)}>
+              🗂️ Manage Bill Types
+            </Button>
+            <Button variant="primary" size="sm" onClick={openAdd}>
+              + Add Bill
+            </Button>
+          </div>
         }
       />
       <PageContainer>
@@ -61,13 +71,13 @@ export default function UtilitiesPage() {
             }
           />
           <StatCard label="Total" value={formatMoney(utils.monthTotal)} tone="slate" />
-          {Object.keys(UTILITY_TYPES).map((key) => (
+          {types.map((t) => (
             <StatCard
-              key={key}
-              label={`${UTILITY_TYPES[key].icon} ${UTILITY_TYPES[key].label}`}
-              value={formatMoney(utils.totalsByType[key] || 0)}
+              key={t.id}
+              label={`${t.icon} ${t.name}`}
+              value={formatMoney(utils.totalsByType[t.name] || 0)}
               tone="slate"
-              muted={!utils.totalsByType[key]}
+              muted={!utils.totalsByType[t.name]}
             />
           ))}
         </div>
@@ -76,6 +86,7 @@ export default function UtilitiesPage() {
           entries={utils.entries}
           monthTotal={utils.monthTotal}
           memberCount={memberCount}
+          byName={byName}
           onAdd={openAdd}
           onEdit={openEdit}
           onDelete={remove}
@@ -87,7 +98,10 @@ export default function UtilitiesPage() {
         onClose={closeForm}
         onSave={save}
         initial={form.editing}
+        types={types}
       />
+
+      <UtilityTypeManager open={managerOpen} onClose={() => setManagerOpen(false)} />
     </>
   )
 }

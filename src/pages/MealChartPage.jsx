@@ -13,7 +13,7 @@ import { exportScreenshot } from '../utils/exportHelpers'
 
 export default function MealChartPage() {
   const { month, activeMembers } = useApp()
-  const { entries, toggleMeal, bulkSet } = useMealChart(month)
+  const { entries, toggleMeal, adjustMealCount, bulkSet } = useMealChart(month)
   const { settings, excludedMembers, toggleMemberExclusion } = useMonthSettings(month)
 
   const navigate = useNavigate()
@@ -148,6 +148,7 @@ export default function MealChartPage() {
             members={includedMembers}
             entries={entries}
             onToggle={toggleMeal}
+            onAdjust={adjustMealCount}
             locked={locked}
           />
 

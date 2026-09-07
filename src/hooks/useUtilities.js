@@ -1,41 +1,27 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 import { db } from '../db/db'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { daysInMonth, isoDateForDay } from '../utils/dateHelpers'
 
 /**
- * Utility bill types — additions only (electricity, water, gas, internet...).
- */
-export const UTILITY_TYPES = {
-  electricity: { label: 'Electricity', icon: '💡' },
-  trash: { label: 'Trash', icon: '🗑️' },
-  gas: { label: 'Gas', icon: '🔥' },
-  internet: { label: 'Internet', icon: '🌐' },
-  other: { label: 'Other', icon: '📄' },
-}
-
-export const UTILITY_TYPE_KEYS = Object.keys(UTILITY_TYPES)
-
-/**
  * Monthly utility bills for the selected month (additions only).
+ *
+ * Since v3, `billType` stores the human-readable type name (e.g. 'Electricity',
+ * 'Water', or any custom type the user created) rather than a fixed key.
+ * Existing rows were migrated in place; unknown names (a type that was deleted
+ * after bills were logged) simply render with a generic icon.
  *
  * @param {string} monthKey - YYYY-MM
  * @returns {{
  *   entries: Array<{id, date, billType, amount, note}>,
  *   monthTotal: number,
- *   totalsByType: Record<string, number>,
+ *   totalsByType: Record<string, number>,   // keyed by type name
  *   addEntry, updateEntry, deleteEntry
  * }}
  */
 export function useUtilities(monthKey) {
   const startIso = `${monthKey}-01`
   const endIso = isoDateForDay(monthKey, daysInMonth(monthKey))
-
-  // One-time migration: "water" bills were renamed to "trash". Idempotent —
-  // converts any leftover water rows so they keep displaying as Trash.
-  useEffect(() => {
-    db.utilities.where('billType').equals('water').modify({ billType: 'trash' })
-  }, [])
 
   const entries = useLiveQuery(
     async () => {
@@ -54,9 +40,7 @@ export function useUtilities(monthKey) {
       const date = data.date
       return db.utilities.add({
         date,
-        billType: UTILITY_TYPE_KEYS.includes(data.billType)
-          ? data.billType
-          : 'other',
+        billType: String(data.billType || 'Other'),
         amount: Number(data.amount) || 0,
         note: data.note?.trim() || '',
         month: date.slice(0, 7),
@@ -67,6 +51,7 @@ export function useUtilities(monthKey) {
 
   const updateEntry = useCallback(async (id, changes) => {
     if (changes.date) changes.month = changes.date.slice(0, 7)
+    if (changes.billType) changes.billType = String(changes.billType)
     return db.utilities.update(id, changes)
   }, [])
 
@@ -78,10 +63,9 @@ export function useUtilities(monthKey) {
   const monthTotal = list.reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
 
   const totalsByType = {}
-  for (const key of UTILITY_TYPE_KEYS) totalsByType[key] = 0
   for (const e of list) {
-    const key = UTILITY_TYPE_KEYS.includes(e.billType) ? e.billType : 'other'
-    totalsByType[key] += Number(e.amount) || 0
+    const key = e.billType || 'Other'
+    totalsByType[key] = (totalsByType[key] || 0) + (Number(e.amount) || 0)
   }
 
   return {

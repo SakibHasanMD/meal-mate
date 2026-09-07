@@ -24,14 +24,14 @@ Everything runs entirely offline in your browser — data lives in IndexedDB, wi
 
 | Feature | Description |
 |---------|-------------|
-| **Member Management** | Add, edit, deactivate, or remove members without losing their history. |
-| **Meal Chart** | Click-to-toggle daily meal entries on a month-view grid. Bulk-set a day/meal for everyone at once, exclude a member for a month, and finalize a month to lock it in. |
+| **Member Management** | Add, edit, or permanently delete members. Three statuses — **Active**, **On Leave** (temporarily away), **Left** (moved out, history kept) — plus a **Member/Guest** type for long-stay guests. The list sorts active → on leave → left. |
+| **Meal Chart** | Click-to-toggle daily meal entries on a month-view grid (0/1 stays the default). Hover a cell for **+/−** to record extra meals (e.g. **2** when a member has a guest). Bulk-set a range — or a single day when "To Day" is unselected — exclude a member for a month, and finalize a month to lock it in. |
 | **Finance Tracking** | Log bazar expenses and record each member's monthly contribution. |
 | **House Fund** | Track the shared fund — deposits, balances, and who is owed what. |
-| **Utilities** | Record monthly utility bills (electricity, gas, trash, water) and how they're shared. |
-| **Automatic Calculations** | Meal rate, individual dues/credits, monthly summaries, and next month's due are all computed live — no manual math. |
+| **Utilities** | Record monthly utility bills (electricity, water, gas, internet, trash, other) and how they're shared. Create **custom bill types** with a preset icon in *Manage Types*; defaults can be extended but never removed. |
+| **Automatic Calculations** | Meal rate, individual dues/credits, monthly summaries, and next month's due are all computed live — no manual math. Meal counts above 1 are included automatically. |
 | **Export** | Download a month's meal chart and financial summary as a PDF, or grab a quick screenshot of any table. |
-| **Backup & Restore** | Export the whole database to a JSON file and restore it later. |
+| **Backup & Restore** | Export the whole database to a JSON file and restore it later — old (v1) backup files still restore cleanly. Schema upgrades also take an automatic in-browser snapshot of all data before migrating. |
 | **Offline-First** | Everything lives in the browser via IndexedDB. No server, no internet connection required after first load. |
 | **Error Resilient** | Wrapped in React error boundaries, so one broken component doesn't crash the whole app. |
 

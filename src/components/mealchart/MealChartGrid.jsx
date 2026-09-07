@@ -18,7 +18,7 @@ import { memberMealTotals } from '../../utils/calculations'
  * The ref is forwarded so the parent can capture it for export.
  */
 const MealChartGrid = forwardRef(function MealChartGrid(
-  { monthKey, members, entries, onToggle, locked },
+  { monthKey, members, entries, onToggle, onAdjust, locked },
   ref,
 ) {
   const days = daysInMonth(monthKey)
@@ -126,12 +126,14 @@ const MealChartGrid = forwardRef(function MealChartGrid(
                             size="sm"
                             value={entry?.breakfast ?? 0}
                             onToggle={() => onToggle(m.id, date, 'breakfast')}
+                            onAdjust={(d) => onAdjust?.(m.id, date, 'breakfast', d)}
                             disabled={locked}
                           />
                           <MealChartCell
                             size="sm"
                             value={entry?.dinner ?? 0}
                             onToggle={() => onToggle(m.id, date, 'dinner')}
+                            onAdjust={(d) => onAdjust?.(m.id, date, 'dinner', d)}
                             disabled={locked}
                           />
                         </div>
@@ -153,8 +155,9 @@ const MealChartGrid = forwardRef(function MealChartGrid(
         </table>
       </div>
       <div className="mt-2 text-[10px] text-slate-400 dark:text-slate-500">
-        Each cell: top = breakfast, bottom = dinner · Weekend days are tinted ·
-        Today is highlighted green · Right column = per-member totals (B/D)
+        Each cell: top = breakfast, bottom = dinner · Click toggles 0/1 · hover a
+        cell for +/− to set extra meals (guest meals, e.g. 2) · Weekend days are
+        tinted · Today is highlighted green · Right column = per-member totals (B/D)
       </div>
     </div>
   )

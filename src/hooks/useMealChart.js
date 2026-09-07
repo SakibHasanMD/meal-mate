@@ -4,6 +4,18 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { daysInMonth, isoDateForDay } from '../utils/dateHelpers'
 
 /**
+ * Upper bound for a single meal slot (breakfast/dinner) per member per day.
+ * 0 and 1 are the normal values; 2+ covers guests/extra meals.
+ */
+export const MAX_MEAL_COUNT = 20
+
+/** Clamp + round a value so it lands in a valid meal count range. */
+function clampMealCount(n) {
+  const v = Math.round(Number(n) || 0)
+  return Math.max(0, Math.min(MAX_MEAL_COUNT, v))
+}
+
+/**
  * Reads/writes meal entries for a given month.
  * Returns the live list of entries for the month plus mutation helpers.
  *
@@ -51,10 +63,33 @@ export function useMealChart(monthKey) {
         .equals([memberId, date])
         .first()
       const current = existing ? Number(existing[mealType]) || 0 : 0
-      const next = current === 1 ? 0 : 1
+      // Keep the classic 0 ↔ 1 toggle as the default: clicking a normal
+      // (1) or extra (2+) meal turns it off; clicking 0 sets a normal meal.
+      const next = current === 0 ? 1 : 0
       await setEntry(memberId, date, { [mealType]: next })
     },
     [setEntry],
+  )
+
+  /** Set an explicit meal count for a slot (0, 1, 2, 3, ... MAX_MEAL_COUNT). */
+  const setMealCount = useCallback(
+    async (memberId, date, mealType, count) => {
+      await setEntry(memberId, date, { [mealType]: clampMealCount(count) })
+    },
+    [setEntry],
+  )
+
+  /** Adjust a slot by +delta/−delta (e.g. +1 to add a guest meal). */
+  const adjustMealCount = useCallback(
+    async (memberId, date, mealType, delta) => {
+      const existing = await db.mealEntries
+        .where('[memberId+date]')
+        .equals([memberId, date])
+        .first()
+      const current = existing ? Number(existing[mealType]) || 0 : 0
+      await setMealCount(memberId, date, mealType, current + delta)
+    },
+    [setMealCount],
   )
 
   /**
@@ -100,6 +135,8 @@ export function useMealChart(monthKey) {
     entries: entries || [],
     setEntry,
     toggleMeal,
+    setMealCount,
+    adjustMealCount,
     bulkSet,
   }
 }

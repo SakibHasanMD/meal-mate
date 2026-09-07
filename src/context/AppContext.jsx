@@ -40,10 +40,24 @@ export function AppProvider({ children }) {
 
   const toggleDark = useCallback(() => setDark((d) => !d), [])
 
-  // Live query of all members (sorted by name).
-  const members = useLiveQuery(() => db.members.orderBy('name').toArray(), [], [])
+  // Live query of all members, sorted by status (active → on leave → left),
+  // then by type (member → guest), then by name. Members who have left sink
+  // to the bottom, and guests always rank just below regular members in the
+  // same status group — a guest never moves below someone from another status
+  // (e.g. an active guest stays above a member who is on leave or left).
+  const members = useLiveQuery(async () => {
+    const list = await db.members.toArray()
+    const statusRank = { active: 0, leave: 1, left: 2 }
+    const typeRank = { member: 0, guest: 1 }
+    return list.sort(
+      (a, b) =>
+        (statusRank[a.status] ?? 3) - (statusRank[b.status] ?? 3) ||
+        (typeRank[a.type] ?? 1) - (typeRank[b.type] ?? 1) ||
+        (a.name || '').localeCompare(b.name || ''),
+    )
+  }, [], [])
 
-  const activeMembers = (members || []).filter((m) => m.active)
+  const activeMembers = (members || []).filter((m) => m.status === 'active')
 
   const setMonthSafe = useCallback((m) => setMonth(m), [])
 

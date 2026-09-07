@@ -1,38 +1,41 @@
 import { useState, useEffect } from 'react'
 import Modal from '../common/Modal'
-import { UTILITY_TYPES, UTILITY_TYPE_KEYS } from '../../hooks/useUtilities'
 
 const emptyForm = {
   date: new Date().toISOString().slice(0, 10),
-  billType: 'electricity',
+  billType: 'Electricity',
   amount: '',
   note: '',
 }
 
 /**
  * Modal form for adding/editing a utility bill entry.
- * Amounts are additions only — there is no way to subtract.
+ * The Bill Type picker shows all types — the predefined defaults plus any
+ * custom types created in "Manage Types". Amounts are additions only.
+ *
+ * @param {Array} types - utility types [{id, name, icon, isDefault}]
  */
-export default function UtilityForm({ open, onClose, onSave, initial }) {
+export default function UtilityForm({ open, onClose, onSave, initial, types = [] }) {
   const [form, setForm] = useState(emptyForm)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (open) {
+      const known = types.some((t) => t.name === initial?.billType)
       setForm(
         initial
           ? {
               date: initial.date || emptyForm.date,
-              billType: UTILITY_TYPE_KEYS.includes(initial.billType)
-                ? initial.billType
-                : 'other',
+              // Keep an existing bill's type even if it was deleted (fallback
+              // chip below) rather than silently reassigning it to Other.
+              billType: known ? initial.billType : initial.billType || emptyForm.billType,
               amount: initial.amount != null ? String(initial.amount) : '',
               note: initial.note || '',
             }
           : emptyForm,
       )
     }
-  }, [open, initial])
+  }, [open, initial, types])
 
   const set = (field, value) => setForm((f) => ({ ...f, [field]: value }))
 
@@ -52,6 +55,8 @@ export default function UtilityForm({ open, onClose, onSave, initial }) {
       setLoading(false)
     }
   }
+
+  const known = types.some((t) => t.name === form.billType)
 
   return (
     <Modal
@@ -73,14 +78,13 @@ export default function UtilityForm({ open, onClose, onSave, initial }) {
             Bill Type
           </span>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {UTILITY_TYPE_KEYS.map((key) => {
-              const t = UTILITY_TYPES[key]
-              const active = form.billType === key
+            {types.map((t) => {
+              const active = form.billType === t.name
               return (
                 <button
-                  key={key}
+                  key={t.id}
                   type="button"
-                  onClick={() => set('billType', key)}
+                  onClick={() => set('billType', t.name)}
                   className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
                     active
                       ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300'
@@ -88,10 +92,16 @@ export default function UtilityForm({ open, onClose, onSave, initial }) {
                   }`}
                 >
                   <span className="mr-1">{t.icon}</span>
-                  {t.label}
+                  {t.name}
                 </button>
               )
             })}
+            {!known && (
+              <span className="flex items-center gap-1.5 rounded-lg border border-dashed border-amber-400 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                <span>📄</span> {form.billType}
+                <span className="text-[10px] text-amber-500">(deleted type)</span>
+              </span>
+            )}
           </div>
         </label>
 

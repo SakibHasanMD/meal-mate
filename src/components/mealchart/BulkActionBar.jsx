@@ -4,18 +4,27 @@ import { daysInMonth, isoDateForDay } from '../../utils/dateHelpers'
 
 /**
  * Toolbar to bulk-set all members' breakfast/dinner/both for a range of days.
- * Supports selecting a single day (from == to) or a multi-day range.
+ *
+ * Single-day support: if "To Day" is left unselected (the default), only the
+ * "From Day" is affected — a single-day operation. Selecting "To Day" turns it
+ * into the classic from→to range operation.
  */
 export default function BulkActionBar({ monthKey, members, onBulkSet, locked }) {
   const days = daysInMonth(monthKey)
   const [fromDay, setFromDay] = useState(1)
-  const [toDay, setToDay] = useState(1)
+  const [toDay, setToDay] = useState('') // '' = not selected → single day
   const [mealType, setMealType] = useState('both')
 
-  // Build the list of ISO dates for the selected range.
+  // Build the list of ISO dates for the selection.
+  // A blank "To Day" ('' = not selected) means exactly the From Day only.
   const dates = useMemo(() => {
-    const start = Math.min(Number(fromDay), Number(toDay))
-    const end = Math.max(Number(fromDay), Number(toDay))
+    const from = Number(fromDay)
+    if (toDay === '' || toDay == null) {
+      return [isoDateForDay(monthKey, from)]
+    }
+    const to = Number(toDay)
+    const start = Math.min(from, to)
+    const end = Math.max(from, to)
     const list = []
     for (let d = start; d <= end; d++) {
       list.push(isoDateForDay(monthKey, d))
@@ -24,6 +33,7 @@ export default function BulkActionBar({ monthKey, members, onBulkSet, locked }) 
   }, [monthKey, fromDay, toDay])
 
   const dayCount = dates.length
+  const singleDay = toDay === ''
 
   const run = (value) => {
     onBulkSet(members.map((m) => m.id), dates, mealType, value)
@@ -55,6 +65,7 @@ export default function BulkActionBar({ monthKey, members, onBulkSet, locked }) 
           onChange={(e) => setToDay(e.target.value)}
           className="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-800 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
         >
+          <option value="">Not selected</option>
           {dayOptions.map((d) => (
             <option key={d} value={d}>
               Day {d}
@@ -64,7 +75,11 @@ export default function BulkActionBar({ monthKey, members, onBulkSet, locked }) 
       </div>
 
       <div className="flex items-center pb-1.5 text-xs text-slate-400 dark:text-slate-500">
-        {dayCount} day{dayCount > 1 ? 's' : ''}
+        {singleDay ? (
+          <span className="text-brand-700 dark:text-brand-400">Only Day {fromDay}</span>
+        ) : (
+          `${dayCount} days`
+        )}
       </div>
 
       <div>
@@ -87,6 +102,11 @@ export default function BulkActionBar({ monthKey, members, onBulkSet, locked }) 
         <Button variant="secondary" size="sm" onClick={() => run(false)} disabled={locked || !members.length}>
           Set all to 0
         </Button>
+      </div>
+
+      <div className="w-full text-[11px] text-slate-400 dark:text-slate-500">
+        Leave <strong>To Day</strong> unselected to update only the day in{' '}
+        <strong>From Day</strong>. Select both for a day-range update.
       </div>
 
       {locked && (
