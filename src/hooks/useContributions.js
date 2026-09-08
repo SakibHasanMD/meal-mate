@@ -104,6 +104,8 @@ export function useMonthSettings(monthKey) {
         finalized: existing?.finalized ?? false,
         excludedMembers: existing?.excludedMembers ?? [],
         bazarEqualsContributions: existing?.bazarEqualsContributions ?? false,
+        skipNextMonth: existing?.skipNextMonth ?? [],
+        customStarting: existing?.customStarting ?? {},
       })
     },
     [monthKey],
@@ -124,6 +126,8 @@ export function useMonthSettings(monthKey) {
         finalized: existing?.finalized ?? false,
         excludedMembers: next,
         bazarEqualsContributions: existing?.bazarEqualsContributions ?? false,
+        skipNextMonth: existing?.skipNextMonth ?? [],
+        customStarting: existing?.customStarting ?? {},
       })
     },
     [monthKey],
@@ -140,6 +144,8 @@ export function useMonthSettings(monthKey) {
         finalized: existing?.finalized ?? false,
         excludedMembers: existing?.excludedMembers ?? [],
         bazarEqualsContributions: !current,
+        skipNextMonth: existing?.skipNextMonth ?? [],
+        customStarting: existing?.customStarting ?? {},
       })
     },
     [monthKey],

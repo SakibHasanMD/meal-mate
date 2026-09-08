@@ -4,7 +4,7 @@ import { useApp } from '../../context/AppContext'
 import { downloadBackup, restoreBackup } from '../../utils/backupHelpers'
 
 const navItems = [
-  { to: '/', label: 'Dashboard', icon: '📊', end: true },
+  { to: '/', label: 'Overview', icon: '📊', end: true },
   { to: '/members', label: 'Members', icon: '👥' },
   { to: '/meal-chart', label: 'Meal Chart', icon: '🍽️' },
   { to: '/finance', label: 'Finance', icon: '💰' },

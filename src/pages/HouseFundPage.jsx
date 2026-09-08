@@ -37,7 +37,7 @@ export default function HouseFundPage() {
         title="House Fund"
         subtitle="Permanent ledger — deposits & spending, all months"
         actions={
-          <Button variant="primary" size="sm" onClick={openAdd}>
+          <Button variant="primary" onClick={openAdd}>
             + Add Entry
           </Button>
         }

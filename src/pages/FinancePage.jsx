@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import Header, { PageContainer } from '../components/layout/Header'
 import Button from '../components/common/Button'
 import NumberInput from '../components/common/NumberInput'
@@ -13,19 +13,21 @@ import { useContributions, useMonthSettings } from '../hooks/useContributions'
 import { monthLabel } from '../utils/dateHelpers'
 import { formatMoney, round2 } from '../utils/calculations'
 import { exportMonthPdf } from '../utils/exportHelpers'
+import { db } from '../db/db'
 
 export default function FinancePage() {
   const { month, members, activeMembers } = useApp()
   const { expenses, addExpense, updateExpense, deleteExpense } = useBazarExpenses(month)
   const { setContribution } = useContributions(month)
-  const { setInitialBazarTaka, bazarEqualsContributions, toggleBazarEqualsContributions } =
+  const { bazarEqualsContributions, toggleBazarEqualsContributions } =
     useMonthSettings(month)
 
   const summary = useMonthlySummary(members, month)
 
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState(null)
-  const [exporting, setExporting] = useState(false)
+  const [skipNextMonth, setSkipNextMonth] = useState(new Set())
+  const [customStarting, setCustomStarting] = useState({})
 
   const bazarRef = useRef(null)
   const summaryRef = useRef(null)
@@ -49,22 +51,100 @@ export default function FinancePage() {
     }
   }
 
-  const handlePdf = async () => {
-    setExporting(true)
-    try {
-      await exportMonthPdf(
-        [
-          { el: summaryRef.current, title: `Meal Calculation — ${monthLabel(month)}` },
-          { el: dueRef.current, title: `Bazar Due — ${monthLabel(summary.nextMonth)}` },
-        ],
-        month,
-      )
-    } finally {
-      setExporting(false)
+  const nextInitial = summary.nextMonthSettings?.initialBazarTaka ?? 2000
+
+  // Handler to update next month's default starting contribution
+  const handleSetInitialBazar = async (value) => {
+    const num = Number(value) || 0
+    const nextMonthKey = summary.nextMonth
+    const preservedSkippedStarting = {}
+    skipNextMonth.forEach((memberId) => {
+      preservedSkippedStarting[memberId] = customStarting[memberId] ?? nextInitial
+    })
+    setCustomStarting(preservedSkippedStarting)
+    const existing = await db.monthSettings.get(nextMonthKey)
+    if (existing) {
+      await db.monthSettings.update(nextMonthKey, {
+        initialBazarTaka: num,
+        customStarting: preservedSkippedStarting,
+      })
+    } else {
+      await db.monthSettings.put({
+        month: nextMonthKey,
+        initialBazarTaka: num,
+        customStarting: preservedSkippedStarting,
+      })
     }
   }
 
-  const nextInitial = summary.nextMonthSettings?.initialBazarTaka ?? 2000
+  // Load Skip Next Month and Custom Starting settings
+  useEffect(() => {
+    const loadSettings = async () => {
+      const nextMonthSettings = summary.nextMonthSettings
+      if (nextMonthSettings?.skipNextMonth) {
+        setSkipNextMonth(new Set(nextMonthSettings.skipNextMonth))
+      } else {
+        setSkipNextMonth(new Set())
+      }
+      if (nextMonthSettings?.customStarting) {
+        setCustomStarting(nextMonthSettings.customStarting)
+      } else {
+        setCustomStarting({})
+      }
+    }
+    loadSettings()
+  }, [summary.nextMonth, summary.nextMonthSettings])
+
+  const handleToggleSkip = async (memberId) => {
+    const newSkip = new Set(skipNextMonth)
+    if (newSkip.has(memberId)) {
+      newSkip.delete(memberId)
+    } else {
+      newSkip.add(memberId)
+    }
+    setSkipNextMonth(newSkip)
+    
+    // Save to database
+    const nextMonthKey = summary.nextMonth
+    const existing = await db.monthSettings.get(nextMonthKey)
+    if (existing) {
+      await db.monthSettings.update(nextMonthKey, {
+        skipNextMonth: Array.from(newSkip),
+      })
+    } else {
+      await db.monthSettings.put({
+        month: nextMonthKey,
+        initialBazarTaka: nextInitial,
+        skipNextMonth: Array.from(newSkip),
+      })
+    }
+  }
+
+  const handleCustomStarting = async (memberId, amount) => {
+    const newCustom = { ...customStarting }
+    if (amount === nextInitial) {
+      // If set to default, remove custom override
+      delete newCustom[memberId]
+    } else {
+      newCustom[memberId] = amount
+    }
+    setCustomStarting(newCustom)
+    
+    // Save to database
+    const nextMonthKey = summary.nextMonth
+    const existing = await db.monthSettings.get(nextMonthKey)
+    if (existing) {
+      await db.monthSettings.update(nextMonthKey, {
+        customStarting: newCustom,
+      })
+    } else {
+      await db.monthSettings.put({
+        month: nextMonthKey,
+        initialBazarTaka: nextInitial,
+        customStarting: newCustom,
+      })
+    }
+  }
 
   // Members included in this month (active and not excluded).
   const excludedMembers = summary.excludedMembers ?? []
@@ -83,18 +163,6 @@ export default function FinancePage() {
       <Header
         title="Finance"
         subtitle={monthLabel(month)}
-        actions={
-          <div className="flex gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handlePdf}
-              disabled={exporting}
-            >
-              {exporting ? 'Exporting…' : '📄 Export PDF'}
-            </Button>
-          </div>
-        }
       />
       <PageContainer>
         {/* Quick totals strip — at the top */}
@@ -220,7 +288,11 @@ export default function FinancePage() {
               month={month}
               nextMonth={summary.nextMonth}
               initialBazarTaka={nextInitial}
-              onCommitInitialBazar={(v) => setInitialBazarTaka(v)}
+              onCommitInitialBazar={handleSetInitialBazar}
+              skipNextMonth={skipNextMonth}
+              onToggleSkip={handleToggleSkip}
+              customStarting={customStarting}
+              onCommitCustomStarting={handleCustomStarting}
             />
           </div>
         </div>

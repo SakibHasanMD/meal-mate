@@ -40,6 +40,14 @@ export function monthLabel(monthKey) {
 }
 
 /**
+ * Month name only (no year), e.g. "July".
+ */
+export function monthName(monthKey) {
+  const d = monthKeyToDate(monthKey)
+  return isValid(d) ? format(d, 'MMMM') : monthKey
+}
+
+/**
  * Short month name + year, e.g. "Jul 2026".
  */
 export function shortMonthLabel(monthKey) {

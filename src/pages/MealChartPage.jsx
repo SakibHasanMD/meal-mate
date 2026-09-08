@@ -71,18 +71,17 @@ export default function MealChartPage() {
           <div className="flex gap-2">
             <Button
               variant="secondary"
-              size="sm"
               onClick={handleScreenshot}
               disabled={exporting || !includedMembers.length}
             >
               {exporting ? 'Capturing…' : '📸 Screenshot'}
             </Button>
             {locked ? (
-              <Button variant="ghost" size="sm" onClick={unfinalize}>
+              <Button variant="ghost" onClick={unfinalize}>
                 Unlock
               </Button>
             ) : (
-              <Button variant="success" size="sm" onClick={finalize}>
+              <Button variant="success" onClick={finalize}>
                 Finalize Month
               </Button>
             )}

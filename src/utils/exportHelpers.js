@@ -1,15 +1,19 @@
 import html2canvas from 'html2canvas'
 import { jsPDF } from 'jspdf'
-import { monthLabel } from './dateHelpers'
+import { monthLabel } from './dateHelpers.js'
 
 /**
  * Capture a DOM element (by ref) as a canvas image using html2canvas.
  * Temporarily adds a class to the element so we can hide interactive-only
  * bits during capture (elements marked with `.export-hide`).
+ *
+ * Exported so the monthly-report builder can reuse the same working
+ * capture path (light-theme + .export-hide handling) for the meal chart.
  */
-async function captureElement(el) {
-  if (!el) throw new Error('No element to capture')
-
+export async function captureElement(el) {
+  if (!el || typeof document === 'undefined') {
+    throw new Error('captureElement requires a DOM element (browser only).')
+  }
   el.classList.add('exporting')
   // Exports always capture the light theme so PDFs/PNGs stay readable even
   // when the app is in dark mode.

@@ -49,10 +49,10 @@ export default function UtilitiesPage() {
         subtitle={monthLabel(month)}
         actions={
           <div className="flex gap-2">
-            <Button variant="secondary" size="sm" onClick={() => setManagerOpen(true)}>
+            <Button variant="secondary" onClick={() => setManagerOpen(true)}>
               🗂️ Manage Bill Types
             </Button>
-            <Button variant="primary" size="sm" onClick={openAdd}>
+            <Button variant="primary" onClick={openAdd}>
               + Add Bill
             </Button>
           </div>
