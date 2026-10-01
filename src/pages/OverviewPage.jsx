@@ -30,6 +30,10 @@ export default function OverviewPage() {
   const { month, members, activeMembers } = useApp()
   const summary = useMonthlySummary(members, month)
   const utils = useUtilities(month)
+  // Utility bills are prepaid, so the report shows the UPCOMING month's
+  // utilities (September report -> October utilities) while the meal chart
+  // and meal calculation stay on the selected month.
+  const prepaidUtils = useUtilities(summary.nextMonth)
   const fund = useHouseFunds()
   const { byName } = useUtilityTypes()
   const { entries, toggleMeal, adjustMealCount } = useMealChart(month)
@@ -41,6 +45,10 @@ export default function OverviewPage() {
 
   const memberCount = activeMembers.length
   const perMemberUtility = memberCount > 0 ? utils.monthTotal / memberCount : 0
+  // The report's utilities section is the prepaid next month, so its
+  // per-member average must be derived from that same month's total.
+  const prepaidPerMemberUtility =
+    memberCount > 0 ? prepaidUtils.monthTotal / memberCount : 0
 
   const totals = summary.totals
 
@@ -51,15 +59,13 @@ export default function OverviewPage() {
 
   const chartRef = useRef(null)
 
-  // Load Skip Next Month settings
+  // Load Skip Next Month and manual starting contribution settings for the
+  // next month — the same record the Finance page's Bazaar Due section edits,
+  // so both screens (and the PDF) resolve identical amounts.
   useEffect(() => {
-    const loadSkipSettings = async () => {
-      const nextMonthSettings = summary.nextMonthSettings
-      if (nextMonthSettings?.skipNextMonth) {
-        setSkipNextMonth(new Set(nextMonthSettings.skipNextMonth))
-      }
-    }
-    loadSkipSettings()
+    const nextMonthSettings = summary.nextMonthSettings
+    setSkipNextMonth(new Set(nextMonthSettings?.skipNextMonth ?? []))
+    setCustomStarting(nextMonthSettings?.customStarting ?? {})
   }, [summary.nextMonth, summary.nextMonthSettings])
 
   const handleToggleSkip = async (memberId) => {
@@ -105,8 +111,12 @@ export default function OverviewPage() {
         activeMembers,
         totalMeals: totals.totalMeals,
         mealRate: totals.mealRate,
-        perMemberUtility,
-        utilities: { entries: utils.entries, monthTotal: utils.monthTotal },
+        perMemberUtility: prepaidPerMemberUtility,
+        // Prepaid next-month utilities (October for a September report).
+        utilities: {
+          entries: prepaidUtils.entries,
+          monthTotal: prepaidUtils.monthTotal,
+        },
         byName,
         mealChartEl: chartRef.current,
         summary: summary.summary,
@@ -115,6 +125,10 @@ export default function OverviewPage() {
         nextMonthSettings: summary.nextMonthSettings,
         includedMembers,
         skipNextMonth,
+        // Read the manual starting contributions straight off the next month's
+        // settings record (the same source the Finance page writes to) so the
+        // PDF never falls back to the default for an overridden member.
+        customStarting: summary.nextMonthSettings?.customStarting ?? {},
       })
     } catch (err) {
       setExportError(err?.message || 'Failed to generate report.')

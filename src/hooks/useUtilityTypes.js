@@ -1,13 +1,16 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { db } from '../db/db'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { FALLBACK_UTILITY_ICON } from '../utils/utilityTypes'
+import {
+  DEFAULT_UTILITY_TYPES,
+  FALLBACK_UTILITY_ICON,
+} from '../utils/utilityTypes'
 
 /**
- * Live access to the `utilityTypes` table: the six predefined defaults plus
- * any custom types the user has created.
+ * Live access to the `utilityTypes` table: the predefined defaults plus any
+ * custom types the user has created.
  *
- * Types are ordered by id — defaults are seeded first (1..6), so they always
+ * Types are ordered by id — the defaults are seeded first, so they always
  * appear before custom types. Default types cannot be deleted; custom types
  * can, without affecting existing utility bills (they merely fall back to a
  * generic icon in the lists).
@@ -20,12 +23,41 @@ import { FALLBACK_UTILITY_ICON } from '../utils/utilityTypes'
  * }}
  */
 export function useUtilityTypes() {
-  const types = useLiveQuery(() => db.utilityTypes.orderBy('id').toArray(), [], [])
+  // No default value on purpose: `undefined` then means "still loading", which
+  // is what tells the self-heal effect below apart from a genuinely empty
+  // `utilityTypes` table. A `[]` default would conflate the two and the
+  // defaults would never be seeded on a fresh install.
+  const types = useLiveQuery(() => db.utilityTypes.orderBy('id').toArray())
 
   const byName = useMemo(() => {
     const map = new Map()
     for (const t of types || []) map.set(t.name, t)
     return map
+  }, [types])
+
+  // Self-heal the default types.
+  //
+  // Dexie only runs a version's `upgrade()` when upgrading an EXISTING
+  // database, so a database created directly at the current version never gets
+  // the defaults seeded and starts with an empty `utilityTypes` table. Adding a
+  // new default (e.g. "Maid" in v4) would likewise be invisible to anyone
+  // whose defaults were seeded by a migration that is already applied.
+  //
+  // So: whenever a default is missing, insert just the missing ones. Existing
+  // rows are never touched, and this is a no-op write-free fast path once the
+  // defaults are all present.
+  useEffect(() => {
+    if (types === undefined) return // still loading (an empty array is real data)
+    const present = new Set(types.map((t) => t.name))
+    const missing = DEFAULT_UTILITY_TYPES.filter((t) => !present.has(t.name))
+    if (missing.length === 0) return
+    db.utilityTypes.bulkAdd(
+      missing.map((t) => ({ ...t, isDefault: true })),
+      { allKeys: true },
+    ).catch(() => {
+      // A concurrent tab may have inserted the same names first; `name` is a
+      // unique index, so swallow the conflict — the next render settles it.
+    })
   }, [types])
 
   /** Create a custom utility type. Throws on empty/duplicate names. */

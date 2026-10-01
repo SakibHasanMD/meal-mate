@@ -12,16 +12,23 @@ import { utilityTypeLabel } from './utilityTypes.js'
  *   Page 1 (A4 portrait, hand-drawn + image)
  *     1. Summary  — active members, total meals, avg meal rate,
  *                    avg utility cost per member (single row, no heading)
- *     2. Monthly Utilities  — bill type, amount, per member
- *     3. Meal Chart  — captured image, scaled to fit the remaining page
- *                      height (aspect ratio preserved, never cropped) and
- *                      centered horizontally if narrower than the column
- *     4. Meal Calculation + Bazaar Due  — single merged per-member table
+ *     2. Monthly Utilities  — {nextMonth} (prepaid), bill type, amount,
+ *                              per member
+ *     3. Meal Chart  — {month} entries, captured image, scaled to fit the
+ *                      remaining page height (aspect ratio preserved, never
+ *                      cropped) and centered horizontally if narrower than
+ *                      the column
+ *     4. Meal Calculation + Bazaar Due  — {month} calculation + {nextMonth}
+ *                                         due, single merged per-member table
  *                                         (Member | Meals | Food Cost |
  *                                          Contributions | Balance |
  *                                          Starting | To Pay)
  *     If the calc+due table doesn't fit after the chart, it overflows to a
  *     second portrait page. Page size is always A4 portrait.
+ *
+ *   Header on page 1: "{month} {year} + {nextMonth} {year}" so the combined
+ *   period (this month's meals, next month's prepaid utilities and bazaar due)
+ *   is explicit.
  *
  *   Footer on every page: "MealMate Generated · {date}" + "Page N of M".
  *
@@ -64,8 +71,19 @@ function monthName(monthKey) {
   return isValid(d) ? format(d, 'MMMM') : monthKey
 }
 
-export function fileNameForReport(monthKey) {
-  return `MealMate_Report_${monthKey}.pdf`
+/**
+ * The report spans two months: meal activity/calculation belongs to
+ * `monthKey`, while the prepaid utilities and the bazaar due belong to
+ * `nextMonth`. The header states both so the period is never mistaken for a
+ * single month, e.g. "September 2026 + October 2026".
+ */
+function periodLabel(monthKey, nextMonth) {
+  return `${monthLabel(monthKey)} + ${monthLabel(nextMonth)}`
+}
+
+export function fileNameForReport(monthKey, nextMonth) {
+  const range = nextMonth ? `${monthKey}_to_${nextMonth}` : monthKey
+  return `MealMate_Report_${range}.pdf`
 }
 
 /**
@@ -77,16 +95,22 @@ export function fileNameForReport(monthKey) {
  *   totalMeals: number,                  // derived from totals.totalMeals
  *   mealRate: number,                    // derived from totals.mealRate
  *   perMemberUtility: number,            // monthTotal / activeMembers.length
- *   utilities: { entries, monthTotal },
+ *   utilities: { entries, monthTotal },    // PREPAID next-month utilities
  *   byName: Map<string, {name, icon}>,  // for utility labels
  *   mealChartEl: HTMLElement | null,     // rendered chart for capture
  *   summary: Array,                      // per-member summary rows (from hook)
  *   due: Array,                          // per-member bazaar due rows (from hook)
  *   nextMonth: string,                   // YYYY-MM for "Next Month Bazaar Due"
- *   nextMonthSettings: Object,           // { initialBazarTaka }
+ *   nextMonthSettings: Object,           // { initialBazarTaka, customStarting, skipNextMonth }
  *   includedMembers: Array,              // active, non-excluded members
  *   reportDate?: Date,                   // for footer "Generated on" stamp
  * }} input
+ *
+ * `customStarting` (memberId -> manual starting contribution) is read straight
+ * off `nextMonthSettings` — the same record the Finance page's Bazaar Due
+ * section reads — so the report and the Finance page always resolve a member's
+ * starting contribution identically instead of falling back to the global
+ * default.
  */
 export async function exportMonthlyReport(input) {
   const {
@@ -105,6 +129,7 @@ export async function exportMonthlyReport(input) {
     includedMembers,
     reportDate = new Date(),
     skipNextMonth = new Set(),
+    customStarting = nextMonthSettings?.customStarting ?? {},
   } = input
 
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
@@ -119,11 +144,11 @@ export async function exportMonthlyReport(input) {
   const hasChart = !!chartCanvas
 
   // ---- Header (page 1) ----
-  // Small metadata line: just the month, top-left.
+  // Small metadata line: combined month range for the report.
   pdf.setFont('helvetica', 'normal')
   pdf.setFontSize(8)
   pdf.setTextColor(...PALETTE.muted)
-  pdf.text(monthLabel(monthKey), M, M + 8)
+  pdf.text(periodLabel(monthKey, nextMonth), M, M + 8)
   // House address, right-aligned on the same header line (opposite the month).
   pdf.text('House 194', pageW - M, M + 8, { align: 'right' })
 
@@ -227,6 +252,7 @@ export async function exportMonthlyReport(input) {
       includedMembers,
       initialBazarTaka,
       skipNextMonth,
+      customStarting,
     )
   }
 
@@ -242,7 +268,15 @@ export async function exportMonthlyReport(input) {
   y += gapAfterSummary
 
   // ---- Section 2: Monthly Utilities ----
-  y = drawSectionHeading(pdf, 'Monthly Utilities', M, y, contentW)
+  // Utilities are prepaid (the maid bill is the exception), so this section
+  // always shows the UPCOMING month's bills (September report -> October).
+  y = drawSectionHeading(
+    pdf,
+    `Monthly Utilities — ${monthLabel(nextMonth)} (Prepaid except Maid Bill)`,
+    M,
+    y,
+    contentW,
+  )
   y = drawUtilitiesTable(
     pdf,
     M,
@@ -302,7 +336,7 @@ export async function exportMonthlyReport(input) {
     drawFooter(pdf, pageW, pageH, reportDate, 2, totalPages)
   }
 
-  pdf.save(fileNameForReport(monthKey))
+  pdf.save(fileNameForReport(monthKey, nextMonth))
 }
 
 // ---------------- drawing helpers ----------------
@@ -466,7 +500,7 @@ function drawUtilitiesTable(pdf, x, y, w, entries, monthTotal, memberCount, byNa
       x,
       y,
       w,
-      ['No utility bills for this month', '', ''],
+      ['No utility bills recorded', '', ''],
       widths,
     )
     return y + 4
@@ -516,7 +550,9 @@ function drawUtilitiesTable(pdf, x, y, w, entries, monthTotal, memberCount, byNa
  */
 function drawCalcDueHeading(pdf, monthKey, nextMonth, initialBazarTaka, x, y, w) {
   const title = `${monthName(monthKey)} Meal Calculation + ${monthName(nextMonth)} Bazaar Due`
-  const note = `Starting: ${fmtMoney(initialBazarTaka)}`
+  // "Default" because individual members may carry a manual override, which is
+  // what the Starting column actually shows per row.
+  const note = `Default starting: ${fmtMoney(initialBazarTaka)}`
   pdf.setFont('helvetica', 'bold')
   pdf.setFontSize(12)
   pdf.setTextColor(...PALETTE.ink)
@@ -553,6 +589,7 @@ function drawCalcAndDueTable(
   includedMembers,
   initialBazarTaka,
   skipNextMonth = new Set(),
+  customStarting = {},
 ) {
   const headers = [
     'Member',
@@ -580,6 +617,16 @@ function drawCalcAndDueTable(
 
   // Look up each due row by memberId so we can render both data sets in one row.
   const dueByMember = new Map((dueRows || []).map((d) => [d.member.id, d]))
+
+  // Resolve a member's next-month starting contribution using the exact rule
+  // the Finance page's Bazaar Due section applies (see NextMonthDueTable):
+  //   Skip Next Month  -> 0 (nothing to collect next month)
+  //   manual override  -> that amount
+  //   otherwise        -> the month's default starting contribution
+  const startingFor = (memberId) =>
+    skipNextMonth.has(memberId)
+      ? 0
+      : Number(customStarting[memberId] ?? initialBazarTaka) || 0
 
   const list = (summaryRows || []).filter((r) =>
     includedMembers.some((m) => m.id === r.member.id),
@@ -609,8 +656,7 @@ function drawCalcAndDueTable(
         ? `${fmtMoney(Math.abs(r.balance))} credit`
         : `${fmtMoney(0)} settled`
     const dueRow = dueByMember.get(r.member.id)
-    const isSkipped = skipNextMonth.has(r.member.id)
-    const actualStarting = isSkipped ? 0 : initialBazarTaka
+    const actualStarting = startingFor(r.member.id)
     const amountToPay = dueRow ? fmtMoney(actualStarting - r.balance) : '—'
     y = drawTableRow(
       pdf,
@@ -637,11 +683,9 @@ function drawCalcAndDueTable(
     Math.abs(totalBalance) < 0.01
       ? `${fmtMoney(0)} balanced`
       : `${fmtMoney(Math.abs(totalBalance))} check`
-  const totalStarting = list.reduce((sum, r) => {
-    return sum + (skipNextMonth.has(r.member.id) ? 0 : initialBazarTaka)
-  }, 0)
+  const totalStarting = list.reduce((sum, r) => sum + startingFor(r.member.id), 0)
   const totalAmountToPay = list.reduce(
-    (sum, r) => sum + (skipNextMonth.has(r.member.id) ? 0 : initialBazarTaka) - r.balance,
+    (sum, r) => sum + startingFor(r.member.id) - r.balance,
     0,
   )
   y = drawTableRow(

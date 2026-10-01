@@ -130,6 +130,33 @@ db.version(3)
     )
   })
 
+// v4 — adds the "Maid" default utility bill type.
+//
+// Schema is unchanged (pure data addition), but a new version is still needed
+// so the upgrade actually runs on databases already created by v3. Existing
+// rows keep their ids and their stored `billType` names, so no bill is touched.
+db.version(4)
+  .stores({
+    members: '++id, name, status, joinDate',
+    mealEntries: '++id, memberId, date, [memberId+date]',
+    bazarExpenses: '++id, date, month',
+    contributions: '++id, memberId, month, [memberId+month]',
+    monthSettings: 'month, initialBazarTaka',
+    houseFunds: '++id, date, type',
+    utilities: '++id, date, month, billType',
+    utilityTypes: '++id, &name, isDefault',
+    preMigrationBackups: '++id, version',
+  })
+  .upgrade(async (tx) => {
+    const MAID = DEFAULT_UTILITY_TYPES.find((t) => t.name === 'Maid')
+    if (!MAID) return
+    // Guard on the name: a restored backup may already carry the type, and
+    // `name` is a unique index so a duplicate insert would abort the upgrade.
+    const exists = await tx.table('utilityTypes').where('name').equals('Maid').first()
+    if (exists) return
+    await tx.table('utilityTypes').add({ ...MAID, isDefault: true })
+  })
+
 /** Default starting grocery fund for a new month. */
 export const DEFAULT_INITIAL_BAZAR_TAKA = 2000
 

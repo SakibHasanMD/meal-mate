@@ -117,7 +117,7 @@ async function normalizeForRestore(payload) {
   }
 
   // Legacy backups have no utilityTypes table — restore the defaults so the
-  // Utilities page always has its six predefined types.
+  // Utilities page always has its predefined types.
   if (!Array.isArray(tables.utilityTypes)) {
     tables.utilityTypes = DEFAULT_UTILITY_TYPES.map((t, i) => ({
       id: i + 1,

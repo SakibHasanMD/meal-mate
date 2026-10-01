@@ -8,8 +8,8 @@ import { useUtilityTypes } from '../../hooks/useUtilityTypes'
  * "Manage Types" dialog for utility bills.
  *
  * Shows the predefined default types (Electricity, Water, Gas, Internet,
- * Trash, Other — non-removable) and any custom types the user created, with
- * a small form to add new ones: a name plus one of the preset icons. The
+ * Trash, Other, Maid — non-removable) and any custom types the user created,
+ * with a small form to add new ones: a name plus one of the preset icons. The
  * chosen icon is displayed alongside the type name everywhere in the app.
  *
  * Deleting a custom type does not touch existing bills — they keep their
@@ -164,8 +164,8 @@ export default function UtilityTypeManager({ open, onClose }) {
           )}
 
           <p className="mt-2 text-[11px] text-slate-400 dark:text-slate-500">
-            The six default types are fixed and cannot be removed. Deleting a
-            custom type keeps existing bills — they just show a generic icon.
+            The default types are fixed and cannot be removed. Deleting a custom
+            type keeps existing bills — they just show a generic icon.
           </p>
         </div>
       </div>

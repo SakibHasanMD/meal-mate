@@ -1,10 +1,13 @@
 /**
  * Utility bill types.
  *
- * The six defaults below are predefined and can never be removed or renamed
+ * The seven defaults below are predefined and can never be removed or renamed
  * by the user. Custom types (created in the "Manage Types" dialog) are stored
  * in the `utilityTypes` table alongside these, sharing the same shape:
  *   { id, name, icon, isDefault }
+ *
+ * "Maid" was added in schema v4; earlier databases get it via that migration
+ * rather than the v3 seeding, which has already run for existing users.
  *
  * Utility bill *entries* reference a type by its human-readable `name`
  * (stored in `utilities.billType`), so deleting a custom type never touches
@@ -19,6 +22,9 @@ export const DEFAULT_UTILITY_TYPES = [
   { name: 'Internet', icon: '🌐' },
   { name: 'Trash', icon: '🗑️' },
   { name: 'Other', icon: '📄' },
+  // Added in v4, hence last: existing databases already hold ids 1..6, so the
+  // migration's auto-assigned id keeps the same display order as fresh ones.
+  { name: 'Maid', icon: '🧹' },
 ]
 
 /** Fallback icon used for entries whose type no longer exists. */
